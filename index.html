@@ -347,4 +347,580 @@
     </div>
 
     <nav class="nav-bar">
-      <button class="nav-item" :class="{active:activeTab==='itinerary'}" @click="activeTab='itinerary'"><span class="nav
+      <button class="nav-item" :class="{active:activeTab==='itinerary'}" @click="activeTab='itinerary'"><span class="nav-icon">📅</span><span class="nav-label">行程</span></button>
+      <button class="nav-item" :class="{active:activeTab==='info'}" @click="activeTab='info'"><span class="nav-icon">ℹ️</span><span class="nav-label">資訊</span></button>
+      <button class="nav-item" :class="{active:activeTab==='packing'}" @click="activeTab='packing'"><span class="nav-icon">🧳</span><span class="nav-label">行李</span></button>
+      <button class="nav-item" :class="{active:activeTab==='split'}" @click="activeTab='split'"><span class="nav-icon">💰</span><span class="nav-label">記帳</span></button>
+      <button class="nav-item" :class="{active:activeTab==='checklist'}" @click="activeTab='checklist'"><span class="nav-icon">🛍️</span><span class="nav-label">清單</span></button>
+    </nav>
+  </div>
+
+  <div class="modal-overlay" v-if="showTripModal" @click.self="showTripModal=false">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="section-header" style="padding:0 0 20px 0;">{{ editingTripId ? '⚙️ 編輯旅程' : '✨ 建立新旅程' }}</div>
+      
+      <div class="input-row"><div class="input-group"><span class="input-label">國旗/Emoji</span><input type="text" class="input-field" v-model="newTripForm.flag" placeholder="例: 🇯🇵"></div><div class="input-group" style="flex: 2;"><span class="input-label">國家/城市</span><input type="text" class="input-field" v-model="newTripForm.city" placeholder="例: 名古屋"></div></div>
+      <div class="input-group"><span class="input-label">自訂團名 (選填)</span><input type="text" class="input-field" v-model="newTripForm.customName" placeholder="例: 家族歡樂遊"></div>
+      
+      <span class="input-label">旅程日期區間</span>
+      <input type="text" class="input-field" v-model="newTripForm.dateRange" v-flatpickr-range placeholder="請點擊出發日，再點擊結束日..." style="margin-bottom:6px; background: white; cursor: pointer; border: 2px solid var(--accent-light);">
+      <span class="input-hint" style="margin-bottom:15px; color: var(--accent-sub);">※ 點擊選擇兩次日期（出發與結束）。若為單日行程點選一天即可。</span>
+
+      <button class="btn-primary" @click="saveTrip">{{ editingTripId ? '💾 儲存變更' : '🚀 讓 AI 幫我建立' }}</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" v-if="showEditInfo" @click.self="showEditInfo=false">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="section-header" style="padding:0 0 20px 0;">✏️ 編輯詳細資訊</div>
+      
+      <div class="input-group" style="margin-bottom: 24px;">
+        <label class="input-label">🛂 數位入境卡 / 簽證 (文字說明)</label>
+        <textarea class="input-field" v-model="infoForm.arrivalCard" rows="2" placeholder="例如：已填寫 VJW、或簽證申請進度"></textarea>
+        
+        <label class="input-label" style="margin-top: 14px;">📱 數位 QR Code 圖片 (通關備用)</label>
+        
+        <div v-if="infoForm.arrivalCardImg" style="position: relative; margin-bottom: 12px; max-width: 180px;">
+          <img :src="infoForm.arrivalCardImg" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);">
+          <button @click="infoForm.arrivalCardImg = null" style="position: absolute; top: -8px; right: -8px; background: white; color: #D34F3F; border: 1px solid #D34F3F; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; padding-bottom: 2px;">✖</button>
+        </div>
+        
+        <label class="btn-action" style="background: var(--accent-light); border: 1px dashed var(--accent-main); color: var(--accent-main); padding: 10px 16px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 100%; font-size: 14px;">
+          📁 從手機相簿選擇圖片...
+          <input type="file" accept="image/*" @change="onImageUpload" style="display: none;">
+        </label>
+      </div>
+      
+      <div class="input-group" style="padding-top:24px; border-top:1px dashed var(--border-color);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;"><label class="input-label" style="margin:0;">✈️ 航班資訊</label><button @click="infoForm.flights.push({details:'', seats:''})" class="btn-small">➕ 新增</button></div>
+        <div v-for="(f, i) in infoForm.flights" :key="'ef'+i" style="background:var(--bg-color); padding:16px; border-radius:var(--radius-sm); margin-top:12px; border:1px solid var(--border-color);"><div class="input-group"><label class="input-label">航班號與時間</label><input type="text" class="input-field" v-model="f.details" placeholder="例: 去程 CI831 09:00"></div><div class="input-group"><label class="input-label">座位號碼</label><input type="text" class="input-field" v-model="f.seats" placeholder="例: 3A, 3B"></div><div style="text-align:right;"><button @click="infoForm.flights.splice(i, 1)" class="btn-action" style="color:var(--accent-main);">🗑️ 刪除航班</button></div></div>
+      </div>
+
+      <div class="input-group" style="margin-top:24px; padding-top:24px; border-top:1px dashed var(--border-color);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;"><label class="input-label" style="margin:0;">🏨 住宿飯店</label><button @click="infoForm.hotels.push({dateRange:'', name:'', booker:'', rooms:''})" class="btn-small">➕ 新增</button></div>
+        <div v-for="(h, i) in infoForm.hotels" :key="'eh'+i" style="background:var(--card-bg); padding:16px; border-radius:var(--radius-sm); margin-top:12px; border:1px dashed var(--accent-main);">
+          <div class="input-group"><label class="input-label">飯店名稱</label><input type="text" class="input-field" v-model="h.name"></div>
+          <label class="input-label">入住區間</label>
+          <input type="text" class="input-field" v-model="h.dateRange" v-flatpickr-range placeholder="請點擊入住日，再點擊退房日..." style="margin-bottom:15px; cursor: pointer; background:white; border: 2px solid var(--accent-light);">
+          <div class="input-group"><label class="input-label">房型</label><input type="text" class="input-field" v-model="h.rooms"></div>
+          <div style="text-align:right;"><button @click="infoForm.hotels.splice(i, 1)" class="btn-action" style="color:var(--accent-main);">🗑️ 刪除飯店</button></div>
+        </div>
+      </div>
+
+      <div class="input-group" style="margin-top:24px; padding-top:24px; border-top:1px dashed var(--border-color);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;"><label class="input-label" style="margin:0;">🚗 自駕租車</label><button @click="infoForm.rentals.push({company:'', carType:'', pickupDate:'', pickupTime:'', equip:''})" class="btn-small">➕ 新增</button></div>
+        <div v-for="(r, i) in infoForm.rentals" :key="'er'+i" style="background:var(--card-bg); padding:16px; border-radius:var(--radius-sm); margin-top:12px; border:1px dashed var(--accent-main);"><div class="input-group"><label class="input-label">租車公司</label><input type="text" class="input-field" v-model="r.company"></div><div class="input-row"><div class="input-group"><label class="input-label">取車日期</label><input type="date" class="input-field" v-model="r.pickupDate"></div><div class="input-group"><label class="input-label">時間</label><input type="time" class="input-field" v-model="r.pickupTime"></div></div><div class="input-group"><label class="input-label">備註配備</label><input type="text" class="input-field" v-model="r.equip" placeholder="例: 兩張安全座椅"></div><div style="text-align:right;"><button @click="infoForm.rentals.splice(i, 1)" class="btn-action" style="color:var(--accent-main);">🗑️ 刪除租車</button></div></div>
+      </div>
+
+      <div class="input-group" style="margin-top:24px; padding-top:24px; border-top:1px dashed var(--border-color);"><label class="input-label">🛡️ 旅平險與緊急聯絡</label><textarea class="input-field" v-model="infoForm.insurance" rows="2"></textarea></div>
+      <button class="btn-primary" style="margin-top:24px;" @click="saveInfo">💾 儲存全部資訊</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" v-if="showAddSchedule" @click.self="showAddSchedule=false">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="section-header" style="padding:0 0 20px 0;">{{ editingSchedule!==null ? '✏️ 編輯行程' : '➕ 新增行程' }}</div>
+      <div class="input-group"><span class="input-label">時間</span><input type="time" class="input-field" v-model="schedForm.time"></div>
+      
+      <div class="input-group">
+        <span class="input-label">地點名稱</span>
+        <div style="position: relative;">
+          <input type="text" class="input-field" v-model="schedForm.place" @input="onPlaceInput" placeholder="輸入關鍵字 (試試打「機場、超市」)..." style="padding-right: 36px;">
+          <span v-if="schedForm.isValidated" class="verified-icon">✅</span>
+        </div>
+        <div v-if="showSuggestions && filteredPlaces.length" class="suggestions-dropdown">
+          <div class="suggestion-header">🔍 AI 智慧在地推薦</div>
+          <div class="suggestion-item" v-for="p in filteredPlaces" :key="p.name" @click="selectPlace(p)">
+            <div class="sugg-title">{{ p.icon }} {{ p.name }}</div>
+            <div v-if="p.sub" class="sugg-sub">{{ p.sub }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-group"><span class="input-label">訂位資訊 (選填)</span><input type="text" class="input-field" v-model="schedForm.reservation" placeholder="例：代碼A123"></div>
+      <div class="input-row"><div class="input-group"><span class="input-label">交通方式</span><select class="input-field" v-model="schedForm.transit"><option v-for="opt in filteredTransitOptions" :key="opt" :value="opt === '無 / 步行' ? '' : opt">{{ opt }}</option></select></div><div class="input-group"><span class="input-label">預估時間</span><input type="text" class="input-field" v-model="schedForm.travelTime" placeholder="AI 自動估算..." style="color: var(--accent-main);"></div></div>
+      <div class="input-group">
+        <span class="input-label">我的備註</span>
+        <textarea class="input-field" v-model="schedForm.note" rows="2" placeholder="可輸入您的專屬備註，AI 情報會為您獨立保留！"></textarea>
+      </div>
+      <button class="btn-primary" style="margin-top:16px;" @click="saveSchedule">💾 儲存</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" v-if="showAddChecklist" @click.self="showAddChecklist=false">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="section-header" style="padding:0 0 20px 0;">{{ editingChecklist!==null ? '✏️ 編輯清單' : '➕ 新增清單' }}</div>
+      <div class="input-group"><span class="input-label">分類</span><div style="display:flex; gap:10px;"><span class="chip" :class="{active:checkForm.type==='eat'}" @click="checkForm.type='eat'">🍽️ 必吃</span><span class="chip" :class="{active:checkForm.type==='buy'}" @click="checkForm.type='buy'">🛒 必買</span></div></div>
+      <div class="input-group"><span class="input-label">項目名稱</span><input type="text" class="input-field" v-model="checkForm.item" placeholder="例：芒果糯米飯"></div>
+      <div class="input-group"><span class="input-label">地點/店家</span><input type="text" class="input-field" v-model="checkForm.place" placeholder="例：夜市名稱"></div>
+      
+      <div class="input-group">
+        <span class="input-label">參考價格</span>
+        <div style="display: flex; gap: 8px;">
+          <select class="input-field" v-model="checkForm.currency" style="flex: 1;">
+            <option v-for="c in currentTrip.currencies" :key="c.code" :value="c.code">{{ c.flag }} {{ c.code }}</option>
+          </select>
+          <input type="number" class="input-field" v-model="checkForm.amount" placeholder="金額 (數字)" style="flex: 1.8;">
+        </div>
+      </div>
+      
+      <div class="input-group"><span class="input-label">備註</span><input type="text" class="input-field" v-model="checkForm.note"></div>
+      <button class="btn-primary" style="margin-top:16px;" @click="saveChecklist">💾 儲存</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const { createApp, ref, computed, reactive, watch } = Vue;
+
+const app = createApp({
+  setup() {
+    const currentView = ref('home');
+    const activeTab = ref('itinerary');
+    const selectedTrip = ref('bkk_friends');
+    const selectedDay = ref(0);
+    const draggedIndex = ref(null); 
+    
+    const showAddSchedule = ref(false);
+    const showAddChecklist = ref(false);
+    const showTripModal = ref(false);
+    const showEditInfo = ref(false);
+    const editingSchedule = ref(null);
+    const editingChecklist = ref(null);
+    const editingTripId = ref(null); 
+    
+    const getToday = () => { const d = new Date(); return d.toISOString().split('T')[0]; };
+
+    const newTripForm = reactive({ city: '', flag: '', customName: '', dateRange: '' });
+    const schedForm = reactive({ time: '09:00', place: '', reservation: '', transit: '', travelTime: '', transitRoute: '', note: '', expanded: false, aiInsight: {}, isValidated: false });
+    const checkForm = reactive({ type: 'eat', place: '', item: '', currency: 'THB', amount: '', note: '' });
+    const infoForm = reactive({ arrivalCard: '', arrivalCardImg: null, flights: [], hotels: [], rentals: [], insurance: '' });
+    const newExp = reactive({ date: getToday(), desc: '', amount: '', currency: 'THB', payMethod: '信用卡', payer: '我', isPersonal: false, splits: ['我', '朋友'] });
+    const members = ref(['我', '朋友']);
+    const newMemberName = ref('');
+    const addMember = () => { if(newMemberName.value && !members.value.includes(newMemberName.value)){ members.value.push(newMemberName.value); newMemberName.value=''; }};
+    const removeMember = (idx) => { members.value.splice(idx, 1); };
+    const newPackItem = ref('');
+
+    const getCurrencyByCity = (city) => {
+      if(/日|東京|大阪|京都|福岡|沖繩|名古屋|札幌/.test(city)) return {code: 'JPY', flag: '🇯🇵', rate: 0.21};
+      if(/韓|首爾|釜山|濟州/.test(city)) return {code: 'KRW', flag: '🇰🇷', rate: 0.024};
+      if(/泰|曼谷|清邁|普吉/.test(city)) return {code: 'THB', flag: '🇹🇭', rate: 0.88};
+      if(/馬|亞庇|吉隆坡|檳城/.test(city)) return {code: 'MYR', flag: '🇲🇾', rate: 7.2};
+      if(/港|香港/.test(city)) return {code: 'HKD', flag: '🇭🇰', rate: 4.15};
+      return {code: 'USD', flag: '💵', rate: 32};
+    };
+
+    const generateDays = (startDate, endDate) => {
+      if (!startDate || !endDate) return [{ date: '1', dateStr: '', weekday: '一', schedule: [] }];
+      const days = [];
+      let current = new Date(startDate);
+      const end = new Date(endDate);
+      const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+      while (current <= end) {
+        const mm = String(current.getMonth() + 1).padStart(2, '0');
+        const dd = String(current.getDate()).padStart(2, '0');
+        days.push({ date: dd, dateStr: `${mm}/${dd}`, weekday: weekdays[current.getDay()], schedule: [] });
+        current.setDate(current.getDate() + 1);
+      }
+      return days.length > 0 ? days : [{ date: '1', dateStr: '', weekday: '一', schedule: [] }];
+    };
+
+    const displayDates = (start, end) => {
+      if(!start || !end) return '';
+      if(start === end) return start.replace(/-/g, '/');
+      return `${start.replace(/-/g, '/')} - ${end.substring(5).replace(/-/g, '/')}`;
+    };
+
+    const trips = ref([
+      {
+        id: 'bkk_friends', city: '曼谷', flag: '🇹🇭', customName: '✨ 閨蜜快閃變美之旅', startDate: '2026-05-15', endDate: '2026-05-17',
+        coverImg: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&w=800&q=80',
+        currencies: [{ code: 'THB', flag: '🇹🇭', rate: 0.88 }, { code: 'TWD', flag: '🇹🇼', rate: 1 }],
+        info: { arrivalCard: '目前免簽證', arrivalCardImg: null, flights: [{details: '去程：5/15 22:40 桃園(TPE) T1 ➔ 01:25 曼谷(BKK) | 中華航空 CI837', seats: ''}, {details: '回程：5/17 02:40 曼谷(BKK) ➔ 07:25 桃園(TPE) T1 | 中華航空 CI838', seats: ''}], hotels: [], rentals: [], insurance: '' }, 
+        packingList: [], 
+        checklist: [{id: 1, type:'eat', place:'Central World 美食街', item:'芒果糯米飯、椰子水', currency:'THB', amount:'', note:'', priceStr:''}], expenses: [],
+        days: [
+          { date: '15', dateStr: '05/15', weekday: '五', schedule: [
+            { id: 1, time: '22:40', place: '搭乘航班出發', note: '沒有帶小孩！準備開啟週末快閃放鬆！', expanded: false, transit: '', travelTime: '', transitRoute: '', reservation: '', aiInsight: {}, isValidated: true }
+          ]},
+          { date: '16', dateStr: '05/16', weekday: '六', schedule: [
+            { id: 2, time: '01:25', place: '抵達曼谷機場', note: '抵達後先去機場 7-11 逛逛吃早餐', expanded: false, transit: '無 / 步行', travelTime: '', transitRoute: '', reservation: '', aiInsight: {}, isValidated: true },
+            { id: 3, time: '09:00', place: '新水門市場', note: '9:00 剛開門就開逛！', expanded: false, transit: 'Grab / 計程車', travelTime: '約 30 分鐘', transitRoute: '', reservation: '', aiInsight: { feature: '曼谷最大服飾批發地，超好買' }, isValidated: true },
+            { id: 4, time: '10:10', place: '搭車前往診所', note: '最晚 10:10 要搭上計程車', expanded: false, transit: 'Grab / 計程車', travelTime: '', transitRoute: '', reservation: '', aiInsight: {}, isValidated: false },
+            { id: 5, time: '11:00', place: '醫美診所療程', note: '肚子餓可以隨時叫外送在診所吃', expanded: false, transit: '', travelTime: '', transitRoute: '', reservation: '11:00 預約', aiInsight: {}, isValidated: false },
+            { id: 6, time: '14:40', place: '專車接送至 SPA', note: '按摩店會派專車來醫美診所接送', expanded: false, transit: '專車接送', travelTime: '', transitRoute: '', reservation: '', aiInsight: {}, isValidated: false },
+            { id: 7, time: '15:00', place: 'Makkha Health & Spa (Heritage Asoke)', note: '精油按摩 + 草藥球', expanded: false, transit: '', travelTime: '', transitRoute: '', reservation: '療程預約', aiInsight: { feature: '地址: 348/1 Sukhumvit Road, Khlong Toei, Khlong Toei, Bangkok 10330' }, isValidated: true },
+            { id: 8, time: '18:00', place: 'Central World', note: '吃晚餐、稍微逛一下', expanded: false, transit: '地鐵 MTR', travelTime: '約 15 分鐘', transitRoute: '搭乘 🟢BTS 至 Chit Lom 站，由天橋直達', reservation: '', aiInsight: { feature: '曼谷市中心超大指標百貨' }, isValidated: true },
+            { id: 9, time: '20:00', place: 'Central World 美食街', note: '必吃清單：椰子水、芒果糯米飯', expanded: false, transit: '無 / 步行', travelTime: '', transitRoute: '', reservation: '', aiInsight: {}, isValidated: true },
+            { id: 10, time: '21:00', place: 'Big C Supercenter', note: '回國前大採買', expanded: false, transit: '無 / 步行', travelTime: '約 5 分鐘', transitRoute: '', reservation: '', aiInsight: { feature: '泰國零食伴手禮掃貨天堂' }, isValidated: true },
+            { id: 11, time: '23:30', place: '出發前往機場', note: '準備搭乘紅眼航班回台', expanded: false, transit: '機場快線 / 機場捷運', travelTime: '約 35 分鐘', transitRoute: '搭乘 🔴機場快線 (ARL) 直達素萬那普機場，票價 45 THB', reservation: '', aiInsight: {}, isValidated: false }
+          ]},
+          { date: '17', dateStr: '05/17', weekday: '日', schedule: [
+            { id: 12, time: '02:40', place: '搭機回程', note: '充飽電回台灣囉！', expanded: false, transit: '', travelTime: '', transitRoute: '', reservation: '', aiInsight: {}, isValidated: false },
+            { id: 13, time: '07:25', place: '抵達台灣', note: '', expanded: false, transit: '', travelTime: '', transitRoute: '', reservation: '', aiInsight: {}, isValidated: false }
+          ]}
+        ]
+      }
+    ]);
+
+    const currentTrip = computed(() => trips.value.find(t => t.id === selectedTrip.value));
+    const currentDayData = computed(() => currentTrip.value.days[selectedDay.value]);
+
+    const enterTrip = (id) => { 
+      selectedTrip.value = id; 
+      selectedDay.value = 0; 
+      activeTab.value = 'itinerary'; 
+      currentView.value = 'app'; 
+      newExp.currency = currentTrip.value.currencies[0].code; 
+      checkForm.currency = currentTrip.value.currencies[0].code;
+    };
+
+    const openAddTripModal = () => {
+      editingTripId.value = null;
+      Object.assign(newTripForm, { city: '', flag: '', customName: '', dateRange: '' });
+      showTripModal.value = true;
+    };
+    
+    const openEditTripModal = () => {
+      editingTripId.value = currentTrip.value.id;
+      const range = currentTrip.value.startDate === currentTrip.value.endDate ? currentTrip.value.startDate : `${currentTrip.value.startDate} to ${currentTrip.value.endDate}`;
+      Object.assign(newTripForm, { city: currentTrip.value.city, flag: currentTrip.value.flag, customName: currentTrip.value.customName || '', dateRange: range });
+      showTripModal.value = true;
+    };
+
+    const deleteCurrentTrip = () => {
+      if(confirm(`確定要刪除這趟旅程嗎？`)) { trips.value = trips.value.filter(t => t.id !== currentTrip.value.id); currentView.value = 'home'; }
+    };
+
+    const saveTrip = () => {
+      if (!newTripForm.city || !newTripForm.dateRange) return alert('請填寫城市名稱與完整日期！');
+      
+      let startDate, endDate;
+      if (newTripForm.dateRange.includes(' to ')) {
+        const parts = newTripForm.dateRange.split(' to ');
+        startDate = parts[0];
+        endDate = parts[1];
+      } else {
+        startDate = newTripForm.dateRange;
+        endDate = newTripForm.dateRange;
+      }
+      
+      const newDays = generateDays(startDate, endDate);
+      const localCur = getCurrencyByCity(newTripForm.city);
+
+      if (editingTripId.value) {
+        currentTrip.value.city = newTripForm.city;
+        currentTrip.value.flag = newTripForm.flag;
+        currentTrip.value.customName = newTripForm.customName;
+        currentTrip.value.startDate = startDate;
+        currentTrip.value.endDate = endDate;
+        newDays.forEach((nd, i) => { if(currentTrip.value.days[i]) nd.schedule = currentTrip.value.days[i].schedule; });
+        currentTrip.value.days = newDays;
+      } else {
+        const aiFetchedImg = `https://loremflickr.com/800/600/${encodeURIComponent(newTripForm.city)},landmark/all`;
+        trips.value.push({
+          id: 't_' + Date.now(), city: newTripForm.city, flag: newTripForm.flag || '✈️', customName: newTripForm.customName,
+          startDate: startDate, endDate: endDate, coverImg: aiFetchedImg,
+          currencies: [localCur, { code: 'TWD', flag: '🇹🇼', rate: 1 }],
+          info: { arrivalCard: '', arrivalCardImg: null, flights: [], hotels: [], rentals: [], insurance: '' }, packingList: [], checklist: [], expenses: [], days: newDays
+        });
+      }
+      showTripModal.value = false;
+    };
+
+    const addOneHour = (timeStr) => { 
+      let [h, m] = timeStr.split(':').map(Number); 
+      h = (h + 1) % 24; 
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`; 
+    };
+
+    const openAddSchedule = () => {
+      let defaultTime = '09:00';
+      if (currentDayData.value && currentDayData.value.schedule.length > 0) {
+        const lastItem = currentDayData.value.schedule[currentDayData.value.schedule.length - 1];
+        defaultTime = addOneHour(lastItem.time);
+      }
+      Object.assign(schedForm, { time: defaultTime, place: '', transit: '', travelTime: '', transitRoute: '', reservation: '', note: '', aiInsight: {}, isValidated: false });
+      editingSchedule.value = null;
+      showAddSchedule.value = true;
+    };
+
+    const dragStart = (idx) => { draggedIndex.value = idx; };
+    const drop = (idx) => {
+      if (draggedIndex.value === null || draggedIndex.value === idx) return;
+      const list = currentDayData.value.schedule;
+      const itemToMove = list.splice(draggedIndex.value, 1)[0];
+      list.splice(idx, 0, itemToMove);
+      draggedIndex.value = null;
+
+      if (list.length > 0) {
+        let baseTime = list[0].time || '09:00';
+        for(let i=1; i<list.length; i++) {
+           baseTime = addOneHour(baseTime);
+           list[i].time = baseTime;
+           if (list[i].transit) { list[i].isRecalculating = true; list[i].travelTime = '✨ 重新計算中...'; }
+        }
+        setTimeout(() => { list.forEach((item, i) => { if (i > 0 && item.transit) { item.isRecalculating = false; item.travelTime = item.transit.includes('步行') ? '約 8 分鐘' : '約 22 分鐘'; } }); }, 1200);
+      }
+    };
+
+    const filteredTransitOptions = computed(() => ['無 / 步行', 'Grab / 計程車', '地鐵 MTR / 地下鐵', '機場快線 / 機場捷運', '自駕租車', '新幹線 / 火車', '專車接送']);
+    const showSuggestions = ref(false);
+    const filteredPlaces = ref([]);
+    
+    const onPlaceInput = () => {
+      schedForm.isValidated = false;
+      searchPlace();
+    };
+
+    const searchPlace = () => {
+      let results = [];
+      const city = currentTrip.value.city;
+      const kw = schedForm.place.toLowerCase();
+
+      let lastLoc = '出發地';
+      const scheduleList = currentDayData.value.schedule;
+      if (scheduleList && scheduleList.length > 0) { lastLoc = scheduleList[scheduleList.length - 1].place; }
+
+      if (kw.includes('機場') || kw.includes('airport')) {
+        if (city.includes('曼谷')||city.includes('泰國')) results.push({ name: '素萬那普機場 (BKK)', icon: '✈️', sub: '主要國際機場' }, { name: '廊曼機場 (DMK)', icon: '✈️', sub: '低成本航空機場' });
+        else if (city.includes('香港')) results.push({ name: '香港國際機場 (HKG)', icon: '✈️', sub: '赤鱲角機場' });
+        else if (city.includes('亞庇')||city.includes('馬來西亞')) results.push({ name: '亞庇國際機場 (BKI)', icon: '✈️', sub: '沙巴主要機場' });
+        else if (city.includes('福岡')) results.push({ name: '福岡機場 (FUK)', icon: '✈️', sub: '離市區超近的機場' });
+        else if (city.includes('台北')||city.includes('台灣')) results.push({ name: '桃園國際機場 (TPE)', icon: '✈️', sub: '台灣主要國際門戶' });
+        else if (city.includes('東京')) results.push({ name: '成田機場 (NRT)', icon: '✈️', sub: '東京主要機場' }, { name: '羽田機場 (HND)', icon: '✈️', sub: '距離市區較近' });
+        else if (city.includes('大阪')||city.includes('京都')) results.push({ name: '關西國際機場 (KIX)', icon: '✈️', sub: '京阪神門戶' });
+        else results.push({ name: `${city}當地機場`, icon: '✈️', sub: '智慧推估當地機場' });
+      }
+      if (kw.includes('超市') || kw.includes('big c')) {
+        if (city.includes('曼谷')) {
+          results.push({ name: 'Big C Supercenter (Rajdamri 分店)', icon: '🛒', sub: `📍 AI 推薦：根據上個行程「${lastLoc}」，為您尋找距離最近的 Big C 分店！` });
+          results.push({ name: 'Gourmet Market', icon: '🛒', sub: '高級超市 (Siam Paragon內)' });
+        }
+        else if (city.includes('福岡')||city.includes('日本')) results.push({ name: 'MaxValu (博多祇園店)', icon: '🛒', sub: `📍 AI 推薦：距離「${lastLoc}」步行最快的分店` });
+        else if (city.includes('香港')) results.push({ name: '惠康 Wellcome', icon: '🛒', sub: '常見連鎖超市' });
+        else results.push({ name: `當地知名超市`, icon: '🛒', sub: '熱門採買地點' });
+      }
+      if (kw.includes('一蘭') || kw.includes('拉麵')) {
+        if (city.includes('福岡') || city.includes('日本')) results.push({ name: '一蘭拉麵 (總本店)', icon: '🍜', sub: `📍 AI 推薦：距離上個行程「${lastLoc}」最近的一蘭分店` });
+      }
+      if (kw.includes('建興') || kw.includes('酒家')) {
+        if (city.includes('曼谷')) results.push({ name: '建興酒家 (Surawong 本店)', icon: '🍽️', sub: `📍 AI 推薦：距離「${lastLoc}」搭車最順路的分店` });
+      }
+      if (kw.includes('樂園') || kw.includes('遊樂園') || kw.includes('主題')) {
+        if (city.includes('曼谷')) results.push({ name: 'Dream World 夢幻世界', icon: '🎡', sub: '曼谷經典遊樂園' }, { name: '暹羅水上樂園', icon: '🎢', sub: '泰國最大水上樂園' });
+        else if (city.includes('福岡')) results.push({ name: '麵包超人兒童博物館', icon: '🧸', sub: '室內親子天堂' }, { name: '海之中道海濱公園', icon: '🎡', sub: '超大溜滑梯與遊樂設施' });
+        else if (city.includes('香港')) results.push({ name: '香港迪士尼樂園', icon: '🎡', sub: '全球獨有冰雪奇緣園區' }, { name: '香港海洋公園', icon: '🐬', sub: '刺激設施與動物展區' });
+      }
+
+      if (kw.length > 0) {
+        const uniqueResults = results.filter((v,i,a)=>a.findIndex(v2=>(v2.name===v.name))===i);
+        filteredPlaces.value = uniqueResults;
+        showSuggestions.value = filteredPlaces.value.length > 0;
+      } else { showSuggestions.value = false; }
+    };
+    
+    const selectPlace = (p) => { 
+      schedForm.place = p.name; 
+      schedForm.isValidated = true; 
+      if(p.sub) { schedForm.aiInsight = { feature: p.sub }; }
+      showSuggestions.value = false; 
+    };
+
+    watch([() => schedForm.place, () => schedForm.transit], ([newPlace, newTransit]) => {
+      if (newPlace && newTransit && newTransit !== '無 / 步行' && !schedForm.travelTime) {
+        schedForm.travelTime = '✨ AI 計算中...';
+        setTimeout(() => { 
+          if(newTransit.includes('步行')) {
+            schedForm.travelTime = '約 8 分鐘';
+            schedForm.transitRoute = '';
+          } else if(newTransit.includes('快線') || newTransit.includes('機場捷運')) {
+            schedForm.travelTime = '約 35 分鐘';
+            const city = currentTrip.value.city;
+            if(city.includes('曼谷')) schedForm.transitRoute = '搭乘 🔴機場快線 (ARL) 直達市區 Phaya Thai 站，單程票價 45 THB';
+            else if(city.includes('福岡')) schedForm.transitRoute = '搭乘 國內線接駁巴士 後轉乘 🟠地下鐵機場線';
+            else if(city.includes('香港')) schedForm.transitRoute = '搭乘 🟢機場快綫，24分鐘極速直達市區 (支援八達通)';
+            else if(city.includes('台北')) schedForm.transitRoute = '搭乘 🟣機捷直達車，35分鐘抵達台北車站';
+            else schedForm.transitRoute = '建議搭乘機場快線直達市中心，免除塞車煩惱。';
+          } else if(newTransit.includes('地鐵')) {
+            schedForm.travelTime = '約 18 分鐘';
+            const city = currentTrip.value.city;
+            if(city.includes('曼谷')) schedForm.transitRoute = '搭乘 🟢BTS淺綠線，進站前請確認方向指標並備妥 Rabbit Card';
+            else if(city.includes('福岡')) schedForm.transitRoute = '搭乘 🟠機場線 往 姪浜 方向，建議使用西瓜卡(Suica)感應進站';
+            else if(city.includes('香港')) schedForm.transitRoute = '搭乘 🔴荃灣線 往 中環 方向，依循紅色指標 (可刷八達通)';
+            else if(city.includes('東京')) schedForm.transitRoute = '搭乘 🚇銀座線(G) 往 淺草 方向，依循黃色指標走';
+            else schedForm.transitRoute = '請提前下載當地地鐵 App，確認欲搭乘之線路與終點站方向。';
+          } else {
+            schedForm.travelTime = '約 25 分鐘';
+            schedForm.transitRoute = '';
+          }
+        }, 800);
+      }
+    });
+
+    const twdHint = computed(() => {
+      if(!newExp.amount || newExp.currency === 'TWD') return 0;
+      const curr = currentTrip.value.currencies.find(c => c.code === newExp.currency);
+      return curr ? (parseFloat(newExp.amount) * curr.rate).toFixed(0) : 0;
+    });
+
+    const toggleSplit = (m) => { const idx = newExp.splits.indexOf(m); if (idx >= 0) newExp.splits.splice(idx, 1); else newExp.splits.push(m); };
+    
+    const addExpense = () => {
+      if (!newExp.date || !newExp.desc || !newExp.amount) return alert('請填寫完整資訊！');
+      currentTrip.value.expenses.push({ ...newExp, amount: parseFloat(newExp.amount), splits: newExp.isPersonal ? [newExp.payer] : [...newExp.splits] });
+      newExp.desc = ''; newExp.amount = ''; newExp.isPersonal = false;
+    };
+    const deleteExpense = (i) => currentTrip.value.expenses.splice(i, 1);
+
+    const settlements = computed(() => {
+      const balances = {}; members.value.forEach(m => balances[m] = 0);
+      currentTrip.value.expenses.forEach(exp => {
+        if(exp.isPersonal) return; 
+        const curr = currentTrip.value.currencies.find(c => c.code === exp.currency);
+        const twd = exp.amount * (curr ? curr.rate : 1);
+        const share = twd / exp.splits.length;
+        balances[exp.payer] = (balances[exp.payer] || 0) + twd;
+        exp.splits.forEach(m => { balances[m] = (balances[m] || 0) - share; });
+      });
+      const debtors = Object.entries(balances).filter(([,v]) => v < -0.5).map(([k,v]) => ({name:k,amt:v}));
+      const creditors = Object.entries(balances).filter(([,v]) => v > 0.5).map(([k,v]) => ({name:k,amt:v}));
+      const result = []; let di = 0, ci = 0;
+      while (di < debtors.length && ci < creditors.length) {
+        const d = debtors[di], c = creditors[ci]; const amt = Math.min(-d.amt, c.amt);
+        result.push({ from: d.name, to: c.name, twdAmount: amt.toFixed(0) });
+        d.amt += amt; c.amt -= amt;
+        if (Math.abs(d.amt) < 0.5) di++; if (Math.abs(c.amt) < 0.5) ci++;
+      }
+      return result;
+    });
+
+    const addPackItem = () => { if(newPackItem.value.trim()) { currentTrip.value.packingList.push({ id: Date.now(), name: newPackItem.value.trim(), checked: false }); newPackItem.value = ''; } };
+    const deletePackItem = (i) => currentTrip.value.packingList.splice(i, 1);
+
+    let schedId = 100;
+    const editSchedule = (idx) => {
+      editingSchedule.value = idx; 
+      const item = currentDayData.value.schedule[idx];
+      Object.assign(schedForm, { 
+        time: item.time, 
+        place: item.place, 
+        note: item.note || '', 
+        transit: item.transit||'', 
+        travelTime: item.travelTime||'', 
+        transitRoute: item.transitRoute||'', 
+        reservation: item.reservation||'',
+        aiInsight: item.aiInsight ? { ...item.aiInsight } : {},
+        isValidated: item.isValidated || false 
+      });
+      showAddSchedule.value = true;
+    };
+    const deleteSchedule = (idx) => currentDayData.value.schedule.splice(idx, 1);
+    
+    const saveSchedule = () => {
+      if (!schedForm.place) return alert('⚠️ 請填寫地點！');
+      const itemToSave = JSON.parse(JSON.stringify(schedForm));
+      itemToSave.expanded = false; 
+      if (editingSchedule.value !== null) { 
+        Object.assign(currentDayData.value.schedule[editingSchedule.value], itemToSave); 
+        editingSchedule.value = null; 
+      } else { 
+        currentDayData.value.schedule.push({ id: schedId++, ...itemToSave }); 
+      }
+      currentDayData.value.schedule.sort((a,b) => a.time.localeCompare(b.time)); 
+      
+      Object.assign(schedForm, { time: '09:00', place: '', transit: '', travelTime: '', transitRoute: '', reservation: '', note: '', aiInsight: {}, isValidated: false });
+      showAddSchedule.value = false;
+    };
+
+    const onImageUpload = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        infoForm.arrivalCardImg = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+
+    const editInfo = () => {
+      infoForm.arrivalCard = currentTrip.value.info.arrivalCard;
+      infoForm.arrivalCardImg = currentTrip.value.info.arrivalCardImg || null;
+      infoForm.insurance = currentTrip.value.info.insurance;
+      infoForm.flights = JSON.parse(JSON.stringify(currentTrip.value.info.flights || []));
+      infoForm.hotels = JSON.parse(JSON.stringify(currentTrip.value.info.hotels || []));
+      infoForm.rentals = JSON.parse(JSON.stringify(currentTrip.value.info.rentals || []));
+      showEditInfo.value = true;
+    };
+    const saveInfo = () => {
+      currentTrip.value.info.arrivalCard = infoForm.arrivalCard;
+      currentTrip.value.info.arrivalCardImg = infoForm.arrivalCardImg;
+      currentTrip.value.info.insurance = infoForm.insurance;
+      currentTrip.value.info.flights = JSON.parse(JSON.stringify(infoForm.flights));
+      currentTrip.value.info.hotels = JSON.parse(JSON.stringify(infoForm.hotels));
+      currentTrip.value.info.rentals = JSON.parse(JSON.stringify(infoForm.rentals));
+      showEditInfo.value = false;
+    };
+
+    const editChecklist = (i) => {
+      editingChecklist.value = i; const item = currentTrip.value.checklist[i];
+      Object.assign(checkForm, { type: item.type, place: item.place, item: item.item, currency: item.currency || currentTrip.value.currencies[0].code, amount: item.amount || '', note: item.note });
+      showAddChecklist.value = true;
+    };
+    const deleteChecklist = (i) => currentTrip.value.checklist.splice(i, 1);
+    const saveChecklist = () => {
+      if (!checkForm.item) return alert('⚠️ 請填寫項目名稱！');
+      const priceStr = checkForm.amount ? `${checkForm.currency} ${checkForm.amount}` : '';
+      if (editingChecklist.value !== null) { 
+        Object.assign(currentTrip.value.checklist[editingChecklist.value], { ...checkForm, priceStr }); 
+        editingChecklist.value = null; 
+      } else { 
+        currentTrip.value.checklist.push({ id: Date.now(), ...checkForm, priceStr }); 
+      }
+      Object.assign(checkForm, { type: 'eat', place: '', item: '', amount: '', note: '' });
+      showAddChecklist.value = false;
+    };
+
+    const openMap = (place) => window.open(`https://www.google.com/maps/search/${encodeURIComponent(place)}`, '_blank');
+
+    return {
+      currentView, activeTab, selectedTrip, selectedDay, trips, currentTrip, currentDayData,
+      showAddSchedule, showAddChecklist, showTripModal, showEditInfo, editingSchedule, editingTripId, editingChecklist,
+      schedForm, checkForm, infoForm, newExp, newPackItem, newTripForm, displayDates,
+      members, newMemberName, twdHint, addMember, removeMember, settlements, toggleSplit,
+      showSuggestions, filteredPlaces, searchPlace, selectPlace, onPlaceInput, filteredTransitOptions,
+      draggedIndex, dragStart, drop,
+      enterTrip, openAddTripModal, openEditTripModal, saveTrip, deleteCurrentTrip,
+      addPackItem, deletePackItem, addExpense, deleteExpense,
+      openAddSchedule, editSchedule, deleteSchedule, saveSchedule, openMap,
+      onImageUpload, editInfo, saveInfo, editChecklist, deleteChecklist, saveChecklist
+    };
+  }
+});
+
+app.directive('flatpickr-range', {
+  mounted(el, binding) {
+    flatpickr(el, {
+      mode: "range",
+      disableMobile: "true", // 🌟 這是解決 iPhone 區間選擇失效的關鍵魔法！
+      locale: window.flatpickr.l10ns.zh_tw,
+      dateFormat: "Y-m-d",
+      onChange: (selectedDates, dateStr) => {
+        el.value = dateStr;
+        // 🌟 強制派發事件讓 Vue 抓取完整的字串
+        el.dispatchEvent(new Event('input', { bubbles: true })); 
+      }
+    });
+  }
+});
+
+app.mount('#app');
+</script>
+</body>
+</html>
