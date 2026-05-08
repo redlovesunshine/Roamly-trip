@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>☕ Roamly Pro 🧸</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="https://npmcdn.com/flatpickr/dist/l10n/zh-tw.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -47,7 +44,7 @@
   .nav-item.active .nav-label { color: var(--accent-main); }
   .nav-item.active .nav-icon { transform: translateY(-4px) scale(1.1); filter: grayscale(0); }
 
-  /* 共用元件：徹底解決 Input 破版 */
+  /* 共用元件 */
   .section-header { padding: 8px 20px 12px; margin: 0 20px 16px; font-size: 18px; font-weight: 800; color: var(--text-main); border-bottom: 2px dashed var(--border-color); }
   .btn-primary { width: 100%; padding: 14px; border-radius: var(--radius-md); border: none; background: var(--accent-main); color: white; font-size: 15px; font-weight: 800; box-shadow: 0 4px 12px rgba(180, 132, 108, 0.3); cursor: pointer; }
   .btn-small { padding: 8px 14px; border-radius: 8px; background: var(--accent-sub); color: white; font-weight: 800; font-size: 13px; border: none; cursor: pointer; }
@@ -80,34 +77,28 @@
   .content-col { flex: 1; min-width: 0; background: var(--card-bg); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color); position: relative; }
   .drag-handle { position: absolute; right: 12px; top: 16px; color: var(--border-color); cursor: grab; font-size: 18px; }
   .reservation-tag { display: inline-block; background: #FFF4E5; color: #D34F3F; font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 6px; margin-top: 8px; border: 1px dashed #D34F3F; }
+  
+  /* 真實 AI 標籤 */
   .ai-insight-box { background: linear-gradient(135deg, #FDFBF7, #F6F0E8); border-radius: 10px; padding: 12px; margin-top: 12px; border: 1px solid rgba(180, 132, 108, 0.2); }
   .ai-insight-header { font-size: 11px; font-weight: 800; color: var(--accent-main); margin-bottom: 6px; }
   .ai-insight-text { font-size: 12px; font-weight: 700; color: var(--text-main); line-height: 1.5; }
 
-  /* 資訊頁 */
+  /* 資訊頁、記帳、清單 */
   .info-box { background: white; border-radius: var(--radius-md); padding: 16px; margin-bottom: 14px; border: 1px solid var(--border-color); border-left: 4px solid var(--accent-main); }
   .info-title { font-size: 14px; font-weight: 800; color: var(--accent-main); margin-bottom: 8px; border-bottom: 1px dashed var(--border-color); padding-bottom: 8px; }
   .info-desc { font-size: 14px; font-weight: 700; color: var(--text-main); line-height: 1.6; white-space: pre-wrap; }
-
-  /* 記帳頁面 */
   .expense-form-card { background: white; padding: 20px; border-radius: 20px; border: 1px solid var(--border-color); margin: 0 20px 20px; box-shadow: var(--shadow-card); }
   .input-row { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
   .member-tag { background: white; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 800; color: var(--text-main); display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border-color); }
-
-  /* 清單卡片 */
   .checklist-item { background: white; border-radius: var(--radius-md); overflow: hidden; margin: 0 20px 16px; border: 1px solid var(--border-color); }
   .checklist-img { width: 100%; height: 180px; object-fit: cover; }
   .checklist-body { padding: 16px; }
   .tag-eat { background: #FFE8E8; color: #D34F3F; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 900; }
   .tag-buy { background: #E8F4FF; color: #5B7A8C; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 900; }
-
-  /* 下拉選單 */
   .suggestions-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); z-index: 100; max-height: 280px; overflow-y: auto; margin-top: 4px; }
   .suggestion-item { padding: 12px 16px; display: flex; flex-direction: column; cursor: pointer; border-bottom: 1px dashed var(--border-color); }
   .sugg-title { font-size: 14px; font-weight: 800; color: var(--text-main); }
   .sugg-sub { font-size: 11px; color: var(--accent-main); font-weight: 700; margin-top: 4px; }
-
-  /* Modals: 強制限制最大寬度與內距，防止時間輸入框撐爆版面 */
   .modal-overlay { position: fixed; inset: 0; background: rgba(74,64,54,0.6); z-index: 200; display: flex; align-items: flex-end; justify-content: center; backdrop-filter: blur(4px); }
   .modal-sheet { background: var(--bg-color); width: 100%; max-width: 430px; box-sizing: border-box; border-radius: 24px 24px 0 0; padding: 24px 20px 40px; max-height: 90vh; overflow-y: auto; overflow-x: hidden; }
 </style>
@@ -122,7 +113,7 @@
     </div>
     
     <div class="country-card" v-for="t in trips" :key="t.id" @click="enterTrip(t.id)">
-      <img :src="t.coverImg" class="country-img" @error="handleImgError($event, t)">
+      <img :src="t.coverImg" class="country-img">
       <div class="country-overlay">
         <div class="country-name">{{ t.flag }} {{ t.customName || t.city }}</div>
         <div class="country-date">{{ displayDates(t.startDate, t.endDate) }}</div>
@@ -180,14 +171,15 @@
             <div class="time-col"><div class="time">{{ item.time }}</div></div>
             <div class="content-col">
               <div class="drag-handle">⠿</div>
-              <div style="font-weight:800; font-size:16px; padding-right:20px;">{{ item.place }}</div>
+              <div style="font-weight:800; font-size:16px; padding-right:20px; white-space: pre-wrap;">{{ item.place }}</div>
               
               <div v-if="item.reservation" class="reservation-tag">🛎️ {{ item.reservation }}</div>
-              <div v-if="item.note" style="font-size:13px; color:var(--text-light); margin-top:8px; border-left:2px solid var(--accent-light); padding-left:8px;">📝 {{ item.note }}</div>
+              <div v-if="item.note" style="font-size:13px; color:var(--text-light); margin-top:8px; border-left:2px solid var(--accent-light); padding-left:8px; white-space: pre-wrap;">📝 {{ item.note }}</div>
               
-              <div class="ai-insight-box" v-if="item.aiInsight && item.aiInsight.feature">
+              <div class="ai-insight-box" v-if="item.aiInsight && (item.aiInsight.feature || item.aiInsight.tip)">
                 <div class="ai-insight-header">✨ AI 景點情報</div>
-                <div class="ai-insight-text">{{ item.aiInsight.feature }}</div>
+                <div class="ai-insight-text" v-if="item.aiInsight.feature" style="color: var(--accent-main); font-weight: 900; margin-bottom: 4px;">{{ item.aiInsight.feature }}</div>
+                <div class="ai-insight-text" v-if="item.aiInsight.tip">{{ item.aiInsight.tip }}</div>
               </div>
 
               <div style="display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end; padding-top: 12px; border-top: 1px dotted var(--border-color);">
@@ -328,10 +320,47 @@
   <div class="modal-overlay" v-if="showTripModal" @click.self="showTripModal = false">
     <div class="modal-sheet">
       <h2 style="margin-bottom:20px; font-size:18px; color:var(--text-main);">{{ editingTripId ? '⚙️ 編輯旅程' : '✨ 建立新旅程' }}</h2>
-      <div style="display:flex; gap:10px;"><div class="input-group" style="flex:1; margin-bottom:15px;"><label class="input-label">國旗</label><input type="text" class="input-field" v-model="newTripForm.flag"></div><div class="input-group" style="flex:3; margin-bottom:15px;"><label class="input-label">城市</label><input type="text" class="input-field" v-model="newTripForm.city"></div></div>
-      <div class="input-group" style="margin-bottom:15px;"><label class="input-label">自訂團名 (選填)</label><input type="text" class="input-field" v-model="newTripForm.customName"></div>
-      <div class="input-group" style="margin-bottom:20px;"><label class="input-label">日期區間</label><input type="text" class="input-field" id="trip-date-range" :value="newTripForm.dateRange" v-flatpickr-range></div>
-      <button class="btn-primary" @click="saveTrip">💾 儲存</button>
+      <div style="display:flex; gap:10px;">
+        <div class="input-group" style="flex:1; margin-bottom:15px;"><label class="input-label">國旗</label><input type="text" class="input-field" v-model="newTripForm.flag" placeholder="🇹🇭"></div>
+        <div class="input-group" style="flex:3; margin-bottom:15px;"><label class="input-label">城市</label><input type="text" class="input-field" v-model="newTripForm.city" placeholder="曼谷"></div>
+      </div>
+      <div class="input-group" style="margin-bottom:15px;"><label class="input-label">自訂團名 (選填)</label><input type="text" class="input-field" v-model="newTripForm.customName" placeholder="例如：曼谷姊妹淘旅行"></div>
+      
+      <div style="display: flex; gap: 10px; margin-bottom: 24px;">
+        <div style="flex: 1; width: 100%; overflow: hidden;">
+          <label class="input-label">出發日期</label>
+          <input type="date" class="input-field" v-model="newTripForm.startDate">
+        </div>
+        <div style="flex: 1; width: 100%; overflow: hidden;">
+          <label class="input-label">回程日期</label>
+          <input type="date" class="input-field" v-model="newTripForm.endDate">
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px;">
+        <button class="btn-primary" @click="saveTrip" style="flex: 2;">💾 儲存設定</button>
+        <button v-if="editingTripId" class="btn-primary" @click="deleteTrip" style="flex: 1; background: #FFF4E5; color: #D34F3F; border: 1px solid #D34F3F; box-shadow: none;">🗑️ 刪除</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" v-if="showApiKeyModal" @click.self="showApiKeyModal = false" style="z-index: 300;">
+    <div class="modal-sheet" style="border-top: 4px solid var(--accent-main);">
+      <h2 style="margin-bottom:10px; font-size:18px;">🔑 啟用真實 Google AI</h2>
+      <p style="font-size: 13px; color: var(--text-main); margin-bottom: 20px; line-height: 1.6; font-weight: 700;">
+        要讓網頁即時連線到真正的 AI 大腦，需要驗證你的專屬金鑰。<br>
+        <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: #5B7A8C; text-decoration: underline;">👉 點此免費申請 Google API Key</a><br>
+        <span style="color:#D34F3F; font-size: 11px;">(提示：網頁如果不能按，請滑到底下把同意條款打勾喔！)</span>
+      </p>
+      
+      <input type="text" class="input-field" v-model="apiKeyInput" placeholder="請貼上 AIza 開頭的字串..." style="margin-bottom: 12px; font-family: monospace;">
+      
+      <div v-if="apiKeyMessage.text" :style="{ color: apiKeyMessage.type === 'error' ? '#D34F3F' : '#5B7A8C', fontSize: '13px', fontWeight: '800', marginBottom: '16px', padding: '10px', background: apiKeyMessage.type === 'error' ? '#FFF4E5' : '#E8F4FF', borderRadius: '8px' }">
+        {{ apiKeyMessage.text }}
+      </div>
+
+      <button class="btn-primary" @click="saveApiKey">💾 儲存並啟用 AI</button>
+      <button class="btn-primary" style="margin-top:10px; background:transparent; color:var(--text-light); border:1px solid var(--border-color); box-shadow:none;" @click="showApiKeyModal = false">先不要</button>
     </div>
   </div>
 
@@ -342,9 +371,27 @@
         <label class="input-label">時間</label>
         <input type="time" class="input-field" v-model="schedForm.time">
       </div>
-      <div style="margin-bottom:15px; position:relative; width: 100%; overflow: hidden;"><label class="input-label">地點</label><input type="text" class="input-field" v-model="schedForm.place" @input="searchPlace">
-        <div v-if="showSuggestions && filteredPlaces.length" class="suggestions-dropdown"><div class="suggestion-item" v-for="p in filteredPlaces" :key="p.name" @click="selectPlace(p)"><div class="sugg-title">{{ p.icon }} {{ p.name }}</div></div></div>
+      
+      <div style="margin-bottom:15px; position:relative; width: 100%; overflow: hidden;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:6px;">
+          <label class="input-label" style="margin:0;">地點</label>
+          <button class="btn-small" style="padding:4px 10px; font-size:11px; background:var(--accent-light); color:var(--accent-main); border:1px solid var(--accent-main);" @click="generateRealAiInsight" :disabled="isGeneratingAi">
+            {{ isGeneratingAi ? '⏳ 思考中...' : '✨ 真 AI 幫我找情報' }}
+          </button>
+        </div>
+        <input type="text" class="input-field" v-model="schedForm.place" placeholder="例如：曼谷大皇宮、環球影城...">
+        
+        <div class="ai-insight-box" v-if="schedForm.aiInsight && (schedForm.aiInsight.feature || schedForm.aiInsight.tip)" style="margin-top: 10px; border: 1px dashed var(--accent-main);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <div class="ai-insight-header" style="margin:0;">✨ AI 專屬情報</div>
+            <button @click="schedForm.aiInsight = {feature:'', tip:''}" style="background:none; border:none; color:#D34F3F; font-size:11px; font-weight:bold; cursor:pointer;">✕ 移除</button>
+          </div>
+          <div class="ai-insight-text" v-if="schedForm.aiInsight.feature" style="color: var(--accent-main); font-weight: 900; margin-bottom: 4px;">{{ schedForm.aiInsight.feature }}</div>
+          <div class="ai-insight-text" v-if="schedForm.aiInsight.tip">{{ schedForm.aiInsight.tip }}</div>
+        </div>
+
       </div>
+
       <div style="margin-bottom:15px; width: 100%; overflow: hidden;"><label class="input-label">訂位/票券資訊 (選填)</label><input type="text" class="input-field" v-model="schedForm.reservation"></div>
       <div style="margin-bottom:15px; width: 100%; overflow: hidden;"><label class="input-label">交通</label><select class="input-field" v-model="schedForm.transit"><option value="">無 / 步行</option><option value="Grab / 計程車">Grab / 計程車</option><option value="地鐵 MTR">地鐵 MTR</option><option value="機場快線">機場快線</option><option value="專車接送">專車接送</option></select></div>
       <div style="margin-bottom:15px; width: 100%; overflow: hidden;"><label class="input-label">備註</label><textarea class="input-field" v-model="schedForm.note" rows="2"></textarea></div>
@@ -427,10 +474,15 @@ createApp({
     const showAddSchedule = ref(false);
     const showTripModal = ref(false);
     const showEditInfo = ref(false);
+    const showApiKeyModal = ref(false);
+    
     const editingSchedule = ref(null);
     const editingChecklist = ref(null);
     const editingTripId = ref(null);
     const draggedIndex = ref(null);
+    const isGeneratingAi = ref(false);
+    const apiKeyInput = ref('');
+    const apiKeyMessage = ref({ type: '', text: '' }); // 解決手機卡死的新狀態
 
     const members = ref(['我', '先生', '朋友']);
     const newMemberName = ref('');
@@ -440,26 +492,63 @@ createApp({
 
     const checkForm = reactive({ type: 'buy', item: '', place: '', amount: '', currency: 'THB', img: null });
     const newExp = reactive({ date: new Date().toISOString().split('T')[0], desc: '', amount: '', currency: 'THB', payMethod: '信用卡', payer: '我', isPersonal: false, splits: ['我', '先生'] });
-    const schedForm = reactive({ time: '09:00', place: '', reservation: '', note: '', transit: '', travelTime: '', transitRoute: '', aiInsight: {} });
+    const schedForm = reactive({ time: '09:00', place: '', reservation: '', note: '', transit: '', travelTime: '', transitRoute: '', aiInsight: { feature: '', tip: '' } });
     const infoForm = reactive({ arrivalCard: '', arrivalCardImg: null, flights: [], hotels: [], rentals: [], insurance: '' });
     const newPackItem = ref('');
-    const newTripForm = reactive({ city: '', flag: '', customName: '', dateRange: '' });
+    const newTripForm = reactive({ city: '', flag: '', customName: '', startDate: '', endDate: '' });
 
-    const HK_IMG = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Hong_Kong_Victoria_Harbour_2019.jpg/800px-Hong_Kong_Victoria_Harbour_2019.jpg';
-    const handleImgError = (event, trip) => { if(trip && trip.id === 'hk_birthday') event.target.src = HK_IMG; };
+    // 🌟 真實 AI 連線，絕不造假 🌟
+    const generateRealAiInsight = async () => {
+      if (!schedForm.place) return alert('請先輸入你要去的地點名稱！');
+      
+      const savedKey = localStorage.getItem('roamly_api_key');
+      if (!savedKey) {
+        showApiKeyModal.value = true;
+        return;
+      }
 
-    const showSuggestions = ref(false);
-    const filteredPlaces = ref([]);
-    const searchPlace = () => {
-      let results = [];
-      const kw = schedForm.place.toLowerCase();
-      if (kw.includes('機場') || kw.includes('airport')) results.push({ name: '素萬那普機場 (BKK)', icon: '✈️', sub: '曼谷國際機場' }, { name: '香港國際機場 (HKG)', icon: '✈️' });
-      if (kw.includes('超市') || kw.includes('big c')) results.push({ name: 'Big C Supercenter', icon: '🛒', sub: '採買零食伴手禮推薦' });
-      if (kw.includes('樂園')) results.push({ name: '香港迪士尼樂園', icon: '🎡', sub: '全球獨有冰雪奇緣園區' });
-      filteredPlaces.value = results;
-      showSuggestions.value = results.length > 0;
+      isGeneratingAi.value = true;
+      schedForm.aiInsight = { feature: '⏳ 思考中...', tip: 'AI 正在分析這個景點的情報...' };
+
+      try {
+        const prompt = `你是一個專業的當地導遊。請針對旅遊地點「${schedForm.place}」提供：1. 一個亮點特色(10個字以內，開頭加上適合的emoji) 2. 一個實用小秘訣或注意事項(20個字以內)。請絕對以嚴格的 JSON 格式回傳，格式為：{"feature": "...", "tip": "..."}`;
+        
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${savedKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
+        
+        if (!res.ok) throw new Error('API 請求失敗');
+        const data = await res.json();
+        const text = data.candidates[0].content.parts[0].text;
+        
+        const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        const result = JSON.parse(cleanText);
+        
+        schedForm.aiInsight = result;
+      } catch (error) {
+        console.error(error);
+        schedForm.aiInsight = { feature: '❌ AI 連線失敗', tip: '請確認 API Key 是否正確，或是網路有問題。' };
+      } finally {
+        isGeneratingAi.value = false;
+      }
     };
-    const selectPlace = (p) => { schedForm.place = p.name; if(p.sub) schedForm.aiInsight = { feature: p.sub }; showSuggestions.value = false; };
+
+    // 🌟 拔掉彈窗 Alert，改成行內提示，保證按了有反應 🌟
+    const saveApiKey = () => {
+      if (!apiKeyInput.value.trim()) {
+        apiKeyMessage.value = { type: 'error', text: '❌ 請輸入或貼上有效的 API Key 喔！' };
+        return;
+      }
+      localStorage.setItem('roamly_api_key', apiKeyInput.value.trim());
+      apiKeyMessage.value = { type: 'success', text: '✅ 儲存成功！視窗即將關閉...' };
+      
+      setTimeout(() => {
+        showApiKeyModal.value = false;
+        apiKeyMessage.value = { type: '', text: '' }; // 清空狀態
+      }, 1200);
+    };
 
     const defaultTrips = [
       {
@@ -469,26 +558,27 @@ createApp({
         info: { arrivalCard: '泰國免簽證，持護照直接通關。', arrivalCardImg: null, flights: [{details: '去程: CI837 22:40 TPE ➔ 01:25 BKK', seats: ''}, {details: '回程: CI838 02:40 BKK ➔ 07:25 TPE', seats: ''}], hotels: [{name: '曼谷市區飯店', dateRange: '5/15-5/17', booker: '我', rooms: '雙人房'}], rentals: [], insurance: '' },
         packingList: [{id: 1, name: '護照 (效期需大於6個月)', checked: false}, {id: 2, name: '泰銖現金 & 海外信用卡', checked: false}, {id: 3, name: '術後保濕與防曬保養品', checked: false}],
         days: [
-          { date: '15', dateStr: '05/15', weekday: '五', schedule: [{id: 101, time: '22:40', place: '桃園機場 (T1)', note: '搭乘 CI837 出發', transit: ''}] },
+          { date: '15', dateStr: '05/15', weekday: '五', schedule: [{id: 101, time: '22:40', place: '桃園機場 (T1)', note: '搭乘 CI837 出發', transit: '', aiInsight: {feature: '✈️ 免稅與貴賓室', tip: '提早抵達逛免稅！'}}] },
           { date: '16', dateStr: '05/16', weekday: '六', schedule: [
               {id: 1011, time: '01:25', place: '抵達素萬那普機場 (BKK)', note: '辦理入境與領取行李', transit: '步行'},
-              {id: 1012, time: '02:00', place: '機場 7-11', note: '採買消夜與吃早餐墊墊肚子', transit: '步行'},
-              {id: 1013, time: '09:00', place: '新水門市場', note: '9點剛開門就開逛', transit: 'Grab / 計程車', travelTime: ''},
-              {id: 1014, time: '10:10', place: '搭車前往醫美', note: '預留塞車時間', transit: 'Grab / 計程車', travelTime: '約 30 分鐘'},
-              {id: 102, time: '11:00', place: '曼谷醫美診所', reservation: '預約保留4小時', note: 'Rejuran麗珠蘭、水光針、Ulthera音波、Oligio玩美電波 (肚子餓可叫外送)', transit: '', travelTime: ''},
-              {id: 104, time: '15:00', place: 'Makkha Health & Spa (Heritage Asoke)', reservation: '15:00 精油按摩+草藥球', note: '地址: 348/1 Sukhumvit Rd (14:40派車至診所接送)', transit: '專車接送', travelTime: ''},
-              {id: 105, time: '18:00', place: 'Central World', note: '吃晚餐', transit: 'Grab / 計程車', travelTime: ''},
-              {id: 106, time: '19:30', place: '百貨美食街', note: '必吃：椰子水、芒果糯米飯', transit: '步行', travelTime: ''},
-              {id: 107, time: '20:30', place: 'Big C Supercenter', note: '伴手禮大採買', transit: '步行', travelTime: ''},
-              {id: 108, time: '22:30', place: '前往素萬那普機場', note: '準備搭機', transit: 'Grab / 計程車', travelTime: ''}
+              {id: 1012, time: '02:00', place: '機場 7-11', note: '吃早餐墊墊肚子', transit: '步行'},
+              {id: 1013, time: '09:00', place: '新水門市場', note: '9點剛開門就開逛', transit: 'Grab / 計程車', aiInsight: {feature: '🛍️ 採買與在地美食', tip: '記得準備小鈔比較好結帳！'}},
+              {id: 1014, time: '10:10', place: '搭車前往醫美', note: '至少要搭上計程車', transit: 'Grab / 計程車', travelTime: '約 30 分鐘'},
+              {id: 102, time: '11:00', place: '曼谷醫美診所', reservation: '預約保留4小時', note: '肚子餓都可以叫外送', transit: '', aiInsight: {feature: '✨ 變美行程', tip: '術後請注意防曬與保濕！'}},
+              {id: 103, time: '14:40', place: '專車接送至按摩', note: '按摩派車接送', transit: '專車接送'},
+              {id: 104, time: '15:00', place: 'Makkha Health & Spa', reservation: '15:00 精油按摩+草藥球', note: '分店: Heritage Asoke\n地址: 348/1 Sukhumvit Rd', transit: '', aiInsight: {feature: '💆‍♀️ 放鬆療癒時刻', tip: '結束後記得給小費喔！'}},
+              {id: 105, time: '18:00', place: 'Central World', note: '吃晚餐', transit: 'Grab / 計程車', aiInsight: {feature: '🏢 吹冷氣血拼聖地', tip: '可憑護照領取遊客折扣卡！'}},
+              {id: 106, time: '19:30', place: '百貨美食街', note: '稍微逛一下，必吃椰子水、芒果糯米飯', transit: '步行'},
+              {id: 107, time: '20:30', place: 'Big C Supercenter', note: '大採買', transit: '步行'},
+              {id: 108, time: '22:30', place: '前往素萬那普機場', note: '準備搭機', transit: 'Grab / 計程車'}
           ] },
-          { date: '17', dateStr: '05/17', weekday: '日', schedule: [{id: 103, time: '02:40', place: '搭乘 CI838 班機', note: '返回台灣', transit: '機場快線', travelTime: '', transitRoute: ''}, {id: 109, time: '07:25', place: '抵達桃園機場 (T1)', note: '平安到家', transit: '', travelTime: '', transitRoute: ''}] }
+          { date: '17', dateStr: '05/17', weekday: '日', schedule: [{id: 103, time: '02:40', place: '搭乘 CI838 班機', note: '返回台灣', transit: '機場快線'}, {id: 109, time: '07:25', place: '抵達桃園機場 (T1)', note: '平安到家', transit: ''}] }
         ],
         checklist: [], expenses: []
       },
       {
         id: 'hk_birthday', city: '香港', flag: '🇭🇰', customName: '🎂 30歲維港慶生', startDate: '2026-07-10', endDate: '2026-07-12',
-        coverImg: HK_IMG,
+        coverImg: 'https://images.unsplash.com/photo-1541959833400-049d37f98ccd?w=800',
         currencies: [{code: 'HKD', rate: 4.15}, {code: 'TWD', rate: 1}],
         info: { arrivalCard: '需上網申請港簽或帶台胞證。', arrivalCardImg: null, flights: [], hotels: [{name: '維港景觀飯店', dateRange: '7/10-7/12', booker: '先生', rooms: '海景雙人房'}], rentals: [], insurance: '待保' },
         packingList: [{id: 1, name: '護照 & 港簽', checked: false}, {id: 2, name: '慶生漂亮洋裝', checked: false}, {id: 3, name: '英規三孔轉接頭', checked: false}],
@@ -507,33 +597,36 @@ createApp({
         packingList: [{id: 1, name: '護照 & MDAC 截圖', checked: false}, {id: 2, name: '小孩防曬乳 & 泳衣', checked: false}, {id: 3, name: '兒童常備藥品 (退燒、腸胃)', checked: false}],
         days: [
           { date: '20', dateStr: '08/20', weekday: '四', schedule: [{id: 301, time: '14:00', place: '抵達亞庇機場', note: '前往飯店寄放行李', transit: 'Grab / 計程車'}] }, 
-          { date: '21', dateStr: '08/21', weekday: '五', schedule: [{id: 302, time: '09:00', place: '美人魚島', note: '帶小孩玩沙', aiInsight: {feature: '沙巴著名浮潛聖地'}}] },
+          { date: '21', dateStr: '08/21', weekday: '五', schedule: [{id: 302, time: '09:00', place: '美人魚島', note: '帶小孩玩沙', aiInsight: {feature: '🌊 陽光與沙灘', tip: '記得使用海洋友善防曬乳喔！'}}] },
           { date: '22', dateStr: '08/22', weekday: '六', schedule: [] }, { date: '23', dateStr: '08/23', weekday: '日', schedule: [] }, { date: '24', dateStr: '08/24', weekday: '一', schedule: [] }, { date: '25', dateStr: '08/25', weekday: '二', schedule: [] }
         ],
         checklist: [], expenses: []
       }
     ];
 
-    // 🌟 終極資料救援機制
     const loadTrips = () => {
-      // 1. 嘗試抓最新版 (v10)，但如果裡面是空陣列 []，跳過它
-      const saved_v10 = localStorage.getItem('roamly_trips_v10_itinerary');
-      if (saved_v10 && saved_v10 !== '[]') return JSON.parse(saved_v10);
+      let data = null;
+      const keys = ['roamly_trips_v16_ai_fix', 'roamly_trips_v15_real_ai', 'roamly_trips_v14_preview', 'roamly_trips_v13_ai', 'roamly_trips_v12_native'];
+      for (let k of keys) {
+        let d = localStorage.getItem(k);
+        if (d && d !== '[]') {
+          data = JSON.parse(d);
+          break; 
+        }
+      }
+      if (!data) data = JSON.parse(JSON.stringify(defaultTrips));
 
-      // 2. 啟動救援！把存有你所有心血的上一版 (v9) 救回來
-      const saved_v9 = localStorage.getItem('roamly_trips_v9_full');
-      if (saved_v9 && saved_v9 !== '[]') return JSON.parse(saved_v9);
+      data.forEach(t => {
+        if(t.days) t.days.forEach(d => {
+          if(d.schedule) d.schedule.forEach(s => { if(!s.aiInsight) s.aiInsight = {feature:'', tip:''}; });
+        });
+      });
 
-      // 3. 連更早之前的 v8 也不放過
-      const saved_v8 = localStorage.getItem('roamly_trips_v8_ultimate');
-      if (saved_v8 && saved_v8 !== '[]') return JSON.parse(saved_v8);
-
-      // 4. 如果真的都沒有，給予最完整的預設資料（包含幫你寫好的泰國行程）
-      return defaultTrips;
+      return data;
     };
     
     const trips = ref(loadTrips());
-    watch(trips, (val) => localStorage.setItem('roamly_trips_v10_itinerary', JSON.stringify(val)), {deep: true});
+    watch(trips, (val) => localStorage.setItem('roamly_trips_v16_ai_fix', JSON.stringify(val)), {deep: true});
 
     const currentTrip = computed(() => trips.value.find(t => t.id === selectedTrip.value) || trips.value[0]);
     const currentDayData = computed(() => currentTrip.value.days[selectedDay.value] || currentTrip.value.days[0]);
@@ -542,24 +635,38 @@ createApp({
     const displayDates = (s, e) => s ? `${s.replace(/-/g, '/')} - ${e.substring(5).replace(/-/g, '/')}` : '';
 
     const saveTrip = () => {
-      const raw = document.getElementById('trip-date-range').value;
-      const delimiter = raw.includes(' 至 ') ? ' 至 ' : ' to ';
-      const parts = raw.includes(delimiter) ? raw.split(delimiter) : [raw, raw];
+      const s = newTripForm.startDate;
+      const e = newTripForm.endDate;
+      if (!s || !e) return alert('請選擇出發與回程日期！');
+      if (new Date(s) > new Date(e)) return alert('回程日期不能早於出發日期喔！');
+
       if (editingTripId.value) {
-        currentTrip.value.city = newTripForm.city; currentTrip.value.flag = newTripForm.flag; currentTrip.value.customName = newTripForm.customName;
-        currentTrip.value.startDate = parts[0]; currentTrip.value.endDate = parts[1];
-        const newD = generateDays(parts[0], parts[1]);
+        currentTrip.value.city = newTripForm.city; 
+        currentTrip.value.flag = newTripForm.flag; 
+        currentTrip.value.customName = newTripForm.customName;
+        currentTrip.value.startDate = s; 
+        currentTrip.value.endDate = e;
+        const newD = generateDays(s, e);
         newD.forEach((d, i) => { if(currentTrip.value.days[i]) d.schedule = currentTrip.value.days[i].schedule; });
         currentTrip.value.days = newD;
         if(selectedDay.value >= newD.length) selectedDay.value = 0;
       } else {
         trips.value.push({
-          id: 't_' + Date.now(), city: newTripForm.city, flag: newTripForm.flag || '✈️', customName: newTripForm.customName, startDate: parts[0], endDate: parts[1],
+          id: 't_' + Date.now(), city: newTripForm.city, flag: newTripForm.flag || '✈️', customName: newTripForm.customName, startDate: s, endDate: e,
           coverImg: `https://loremflickr.com/800/600/${encodeURIComponent(newTripForm.city)}`, currencies: [{ code: 'USD', rate: 32 }, { code: 'TWD', rate: 1 }],
-          info: { arrivalCard: '', arrivalCardImg: null, flights: [], hotels: [], rentals: [], insurance: '' }, packingList: [], checklist: [], expenses: [], days: generateDays(parts[0], parts[1])
+          info: { arrivalCard: '', arrivalCardImg: null, flights: [], hotels: [], rentals: [], insurance: '' }, packingList: [], checklist: [], expenses: [], days: generateDays(s, e)
         });
       }
       showTripModal.value = false;
+    };
+
+    const deleteTrip = () => {
+      if (confirm('⚠️ 確定要刪除這個旅程嗎？裡面的記帳與行程都會一併消失且無法復原喔！')) {
+        const idx = trips.value.findIndex(t => t.id === editingTripId.value);
+        if (idx >= 0) trips.value.splice(idx, 1);
+        showTripModal.value = false;
+        currentView.value = 'home';
+      }
     };
 
     const dragStart = (idx) => { draggedIndex.value = idx; };
@@ -632,14 +739,24 @@ createApp({
     return {
       currentView, activeTab, trips, currentTrip, selectedDay, currentDayData, displayDates,
       showAddChecklist, showAddSchedule, showTripModal, showEditInfo, editingSchedule, editingChecklist, editingTripId, draggedIndex,
-      checkForm, newExp, schedForm, infoForm, newPackItem, newTripForm, members, newMemberName, twdHint, handleImgError,
-      showSuggestions, filteredPlaces, searchPlace, selectPlace, 
-      // ✅ 換上正統官方 Google Maps App 喚醒 API
+      showApiKeyModal, apiKeyInput, apiKeyMessage, isGeneratingAi, saveApiKey, generateRealAiInsight,
+      checkForm, newExp, schedForm, infoForm, newPackItem, newTripForm, members, newMemberName, twdHint,
       openMap: (place) => window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(place), '_blank'),
-      enterTrip, saveTrip, addPackItem, deletePackItem, editInfo, saveInfo, onImageUpload,
-      openAddTripModal: () => { editingTripId.value = null; Object.assign(newTripForm, { city: '', flag: '', customName: '', dateRange: '' }); showTripModal.value = true; },
-      openEditTripModal: () => { editingTripId.value = currentTrip.value.id; const range = currentTrip.value.startDate === currentTrip.value.endDate ? currentTrip.value.startDate : `${currentTrip.value.startDate} to ${currentTrip.value.endDate}`; Object.assign(newTripForm, { city: currentTrip.value.city, flag: currentTrip.value.flag, customName: currentTrip.value.customName || '', dateRange: range }); showTripModal.value = true; },
-      openAddSchedule: () => { editingSchedule.value = null; Object.assign(schedForm, { time: '09:00', place: '', reservation: '', note: '', transit: '', travelTime: '', transitRoute: '', aiInsight: {} }); showAddSchedule.value = true; },
+      enterTrip, saveTrip, deleteTrip, addPackItem, deletePackItem, editInfo, saveInfo, onImageUpload,
+      
+      openAddTripModal: () => { 
+        editingTripId.value = null; 
+        const today = new Date().toISOString().split('T')[0];
+        Object.assign(newTripForm, { city: '', flag: '', customName: '', startDate: today, endDate: today }); 
+        showTripModal.value = true; 
+      },
+      openEditTripModal: () => { 
+        editingTripId.value = currentTrip.value.id; 
+        Object.assign(newTripForm, { city: currentTrip.value.city, flag: currentTrip.value.flag, customName: currentTrip.value.customName || '', startDate: currentTrip.value.startDate, endDate: currentTrip.value.endDate }); 
+        showTripModal.value = true; 
+      },
+      
+      openAddSchedule: () => { editingSchedule.value = null; Object.assign(schedForm, { time: '09:00', place: '', reservation: '', note: '', transit: '', travelTime: '', transitRoute: '', aiInsight: { feature: '', tip: '' } }); showAddSchedule.value = true; },
       editSchedule: (idx) => { editingSchedule.value = idx; Object.assign(schedForm, currentDayData.value.schedule[idx]); showAddSchedule.value = true; },
       deleteSchedule: (idx) => currentDayData.value.schedule.splice(idx, 1),
       saveSchedule, dragStart, drop,
@@ -648,8 +765,6 @@ createApp({
       editChecklist, onChecklistImgUpload, saveChecklist
     };
   }
-}).directive('flatpickr-range', {
-  mounted(el) { flatpickr(el, { mode: "range", disableMobile: "true", locale: window.flatpickr.l10ns.zh_tw, dateFormat: "Y-m-d", onClose: (d, str) => el.value = str }); }
 }).mount('#app');
 </script>
 </body>
