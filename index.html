@@ -137,15 +137,17 @@
       </div>
 
       <div v-if="showAdminLogin" style="text-align: left; margin-bottom: 20px; padding: 12px; background: #FFF4E5; border-radius: 12px; border: 1px dashed var(--accent-main);">
-        <label class="input-label" style="color: #D34F3F;">👑 主揪管理員密碼</label>
+        <label class="input-label" style="color: #D34F3F;">👑 管理員密碼</label>
         <input type="password" class="input-field" v-model="adminPassword" placeholder="輸入密碼" @keyup.enter="handleLogin">
+        <!--
         <div style="font-size:11px; color:var(--text-light); margin-top:4px;">預設密碼為：roamly2026</div>
+        -->
       </div>
 
       <button class="btn-primary" @click="handleLogin">進入旅程 🚀</button>
       
       <div style="margin-top: 16px; font-size: 13px; color: var(--accent-sub); font-weight: 800; cursor: pointer;" @click="showAdminLogin = !showAdminLogin">
-        {{ showAdminLogin ? '取消管理員登入' : '我是主揪 (切換管理模式)' }}
+        {{ showAdminLogin ? '取消管理員登入' : '我是管理員 (切換管理模式)' }}
       </div>
     </div>
   </div>
