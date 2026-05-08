@@ -346,11 +346,10 @@
 
   <div class="modal-overlay" v-if="showApiKeyModal" @click.self="showApiKeyModal = false" style="z-index: 300;">
     <div class="modal-sheet" style="border-top: 4px solid var(--accent-main);">
-      <h2 style="margin-bottom:10px; font-size:18px;">🔑 啟用真實 Google AI</h2>
+      <h2 style="margin-bottom:10px; font-size:18px;">🔑 設定 Google AI 金鑰</h2>
       <p style="font-size: 13px; color: var(--text-main); margin-bottom: 20px; line-height: 1.6; font-weight: 700;">
         要讓網頁即時連線到真正的 AI 大腦，需要驗證你的專屬金鑰。<br>
-        <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: #5B7A8C; text-decoration: underline;">👉 點此免費申請 Google API Key</a><br>
-        <span style="color:#D34F3F; font-size: 11px;">(提示：網頁如果不能按，請滑到底下把同意條款打勾喔！)</span>
+        <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: #5B7A8C; text-decoration: underline;">👉 點此免費申請 Google API Key</a>
       </p>
       
       <input type="text" class="input-field" v-model="apiKeyInput" placeholder="請貼上 AIza 開頭的字串..." style="margin-bottom: 12px; font-family: monospace;">
@@ -375,18 +374,25 @@
       <div style="margin-bottom:15px; position:relative; width: 100%; overflow: hidden;">
         <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:6px;">
           <label class="input-label" style="margin:0;">地點</label>
-          <button class="btn-small" style="padding:4px 10px; font-size:11px; background:var(--accent-light); color:var(--accent-main); border:1px solid var(--accent-main);" @click="generateRealAiInsight" :disabled="isGeneratingAi">
-            {{ isGeneratingAi ? '⏳ 思考中...' : '✨ 真 AI 幫我找情報' }}
-          </button>
+          
+          <div style="display: flex; gap: 6px;">
+            <button class="btn-small" style="padding:4px 8px; font-size:11px; background:var(--bg-color); color:var(--text-light); border:1px solid var(--border-color);" @click="openApiKeyModal">🔑 換KEY</button>
+            <button class="btn-small" style="padding:4px 10px; font-size:11px; background:var(--accent-light); color:var(--accent-main); border:1px solid var(--accent-main);" @click="generateRealAiInsight" :disabled="isGeneratingAi">
+              {{ isGeneratingAi ? '⏳ 思考中...' : '✨ 真 AI 幫我找情報' }}
+            </button>
+          </div>
+
         </div>
         <input type="text" class="input-field" v-model="schedForm.place" placeholder="例如：曼谷大皇宮、環球影城...">
         
-        <div class="ai-insight-box" v-if="schedForm.aiInsight && (schedForm.aiInsight.feature || schedForm.aiInsight.tip)" style="margin-top: 10px; border: 1px dashed var(--accent-main);">
+        <div class="ai-insight-box" v-if="schedForm.aiInsight && (schedForm.aiInsight.feature || schedForm.aiInsight.tip)" :style="{ borderColor: schedForm.aiInsight.feature.includes('❌') ? '#D34F3F' : 'var(--accent-main)' }" style="margin-top: 10px; border: 1px dashed;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <div class="ai-insight-header" style="margin:0;">✨ AI 專屬情報</div>
+            <div class="ai-insight-header" :style="{ color: schedForm.aiInsight.feature.includes('❌') ? '#D34F3F' : 'var(--accent-main)' }" style="margin:0;">
+              {{ schedForm.aiInsight.feature.includes('❌') ? '⚠️ 錯誤提示' : '✨ AI 專屬情報' }}
+            </div>
             <button @click="schedForm.aiInsight = {feature:'', tip:''}" style="background:none; border:none; color:#D34F3F; font-size:11px; font-weight:bold; cursor:pointer;">✕ 移除</button>
           </div>
-          <div class="ai-insight-text" v-if="schedForm.aiInsight.feature" style="color: var(--accent-main); font-weight: 900; margin-bottom: 4px;">{{ schedForm.aiInsight.feature }}</div>
+          <div class="ai-insight-text" v-if="schedForm.aiInsight.feature" :style="{ color: schedForm.aiInsight.feature.includes('❌') ? '#D34F3F' : 'var(--accent-main)' }" style="font-weight: 900; margin-bottom: 4px;">{{ schedForm.aiInsight.feature }}</div>
           <div class="ai-insight-text" v-if="schedForm.aiInsight.tip">{{ schedForm.aiInsight.tip }}</div>
         </div>
 
@@ -482,7 +488,7 @@ createApp({
     const draggedIndex = ref(null);
     const isGeneratingAi = ref(false);
     const apiKeyInput = ref('');
-    const apiKeyMessage = ref({ type: '', text: '' }); // 解決手機卡死的新狀態
+    const apiKeyMessage = ref({ type: '', text: '' }); 
 
     const members = ref(['我', '先生', '朋友']);
     const newMemberName = ref('');
@@ -497,18 +503,20 @@ createApp({
     const newPackItem = ref('');
     const newTripForm = reactive({ city: '', flag: '', customName: '', startDate: '', endDate: '' });
 
-    // 🌟 真實 AI 連線，絕不造假 🌟
+    // 🌟 進階版錯誤處理 🌟
     const generateRealAiInsight = async () => {
       if (!schedForm.place) return alert('請先輸入你要去的地點名稱！');
       
       const savedKey = localStorage.getItem('roamly_api_key');
       if (!savedKey) {
+        apiKeyInput.value = '';
+        apiKeyMessage.value = { type: '', text: '' };
         showApiKeyModal.value = true;
         return;
       }
 
       isGeneratingAi.value = true;
-      schedForm.aiInsight = { feature: '⏳ 思考中...', tip: 'AI 正在分析這個景點的情報...' };
+      schedForm.aiInsight = { feature: '⏳ 思考中...', tip: 'AI 正在努力分析中，請稍候...' };
 
       try {
         const prompt = `你是一個專業的當地導遊。請針對旅遊地點「${schedForm.place}」提供：1. 一個亮點特色(10個字以內，開頭加上適合的emoji) 2. 一個實用小秘訣或注意事項(20個字以內)。請絕對以嚴格的 JSON 格式回傳，格式為：{"feature": "...", "tip": "..."}`;
@@ -519,7 +527,12 @@ createApp({
           body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
         
-        if (!res.ok) throw new Error('API 請求失敗');
+        if (!res.ok) {
+          if (res.status === 400) throw new Error('API Key 無效或格式錯誤 (400)');
+          if (res.status === 403) throw new Error('權限拒絕，可能是地區限制或 Key 錯誤 (403)');
+          throw new Error(`伺服器錯誤 (${res.status})`);
+        }
+
         const data = await res.json();
         const text = data.candidates[0].content.parts[0].text;
         
@@ -529,16 +542,26 @@ createApp({
         schedForm.aiInsight = result;
       } catch (error) {
         console.error(error);
-        schedForm.aiInsight = { feature: '❌ AI 連線失敗', tip: '請確認 API Key 是否正確，或是網路有問題。' };
+        let errorHint = '請確認網路狀態，或嘗試關閉擋廣告軟體 (AdBlock)。';
+        if (error.message.includes('API Key')) errorHint = '請點擊左側「🔑 換KEY」重新輸入正確的金鑰。';
+        if (error.message.includes('JSON')) errorHint = 'AI 回傳的格式有點調皮，請再點一次按鈕試試看！';
+        
+        schedForm.aiInsight = { feature: '❌ AI 連線失敗', tip: `${error.message}。${errorHint}` };
       } finally {
         isGeneratingAi.value = false;
       }
     };
 
-    // 🌟 拔掉彈窗 Alert，改成行內提示，保證按了有反應 🌟
+    const openApiKeyModal = () => {
+      const savedKey = localStorage.getItem('roamly_api_key');
+      apiKeyInput.value = savedKey || '';
+      apiKeyMessage.value = { type: '', text: '' };
+      showApiKeyModal.value = true;
+    };
+
     const saveApiKey = () => {
-      if (!apiKeyInput.value.trim()) {
-        apiKeyMessage.value = { type: 'error', text: '❌ 請輸入或貼上有效的 API Key 喔！' };
+      if (!apiKeyInput.value.trim() || !apiKeyInput.value.startsWith('AIza')) {
+        apiKeyMessage.value = { type: 'error', text: '❌ 格式錯誤！請確定是 AIza 開頭的一整串密碼喔！' };
         return;
       }
       localStorage.setItem('roamly_api_key', apiKeyInput.value.trim());
@@ -546,8 +569,8 @@ createApp({
       
       setTimeout(() => {
         showApiKeyModal.value = false;
-        apiKeyMessage.value = { type: '', text: '' }; // 清空狀態
-      }, 1200);
+        apiKeyMessage.value = { type: '', text: '' }; 
+      }, 1000);
     };
 
     const defaultTrips = [
@@ -606,7 +629,7 @@ createApp({
 
     const loadTrips = () => {
       let data = null;
-      const keys = ['roamly_trips_v16_ai_fix', 'roamly_trips_v15_real_ai', 'roamly_trips_v14_preview', 'roamly_trips_v13_ai', 'roamly_trips_v12_native'];
+      const keys = ['roamly_trips_v17_fix_key', 'roamly_trips_v16_ai_fix', 'roamly_trips_v15_real_ai'];
       for (let k of keys) {
         let d = localStorage.getItem(k);
         if (d && d !== '[]') {
@@ -626,7 +649,7 @@ createApp({
     };
     
     const trips = ref(loadTrips());
-    watch(trips, (val) => localStorage.setItem('roamly_trips_v16_ai_fix', JSON.stringify(val)), {deep: true});
+    watch(trips, (val) => localStorage.setItem('roamly_trips_v17_fix_key', JSON.stringify(val)), {deep: true});
 
     const currentTrip = computed(() => trips.value.find(t => t.id === selectedTrip.value) || trips.value[0]);
     const currentDayData = computed(() => currentTrip.value.days[selectedDay.value] || currentTrip.value.days[0]);
@@ -739,7 +762,7 @@ createApp({
     return {
       currentView, activeTab, trips, currentTrip, selectedDay, currentDayData, displayDates,
       showAddChecklist, showAddSchedule, showTripModal, showEditInfo, editingSchedule, editingChecklist, editingTripId, draggedIndex,
-      showApiKeyModal, apiKeyInput, apiKeyMessage, isGeneratingAi, saveApiKey, generateRealAiInsight,
+      showApiKeyModal, apiKeyInput, apiKeyMessage, isGeneratingAi, saveApiKey, generateRealAiInsight, openApiKeyModal,
       checkForm, newExp, schedForm, infoForm, newPackItem, newTripForm, members, newMemberName, twdHint,
       openMap: (place) => window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(place), '_blank'),
       enterTrip, saveTrip, deleteTrip, addPackItem, deletePackItem, editInfo, saveInfo, onImageUpload,
