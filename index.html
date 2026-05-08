@@ -54,7 +54,12 @@
   .section-header { padding: 8px 20px 12px; margin: 0 20px 16px; font-size: 18px; font-weight: 800; color: var(--text-main); border-bottom: 2px dashed var(--border-color); }
   .btn-primary { width: 100%; padding: 14px; border-radius: var(--radius-md); border: none; background: var(--accent-main); color: white; font-size: 15px; font-weight: 800; box-shadow: 0 4px 12px rgba(180, 132, 108, 0.3); cursor: pointer; }
   .btn-small { padding: 8px 14px; border-radius: 8px; background: var(--accent-sub); color: white; font-weight: 800; font-size: 13px; border: none; cursor: pointer; }
+  
+  /* 🌟 修正欄位排版設定 🌟 */
   .input-field { width: 100%; min-width: 0; max-width: 100%; padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-color); font-size: 14px; font-weight: 700; color: var(--text-main); outline: none; box-sizing: border-box; }
+  /* 特別針對日期與時間輸入框縮減左右 padding，避免手機螢幕太窄擠壓字體重疊 */
+  input[type="date"].input-field, input[type="time"].input-field { padding: 12px 6px; font-size: 13px; letter-spacing: -0.5px; }
+  
   .input-label { font-size: 13px; font-weight: 800; color: var(--accent-main); margin-bottom: 6px; display: block; }
   .chip { padding: 6px 14px; border-radius: 50px; background: white; border: 1px solid var(--border-color); cursor: pointer; font-size: 13px; font-weight: 800; color: var(--text-main); display: inline-flex; align-items: center; justify-content: center; }
   .chip.active { border-color: var(--accent-main); background: var(--accent-main); color: white; }
@@ -266,12 +271,19 @@
       <div class="section-header">💸 記帳與分帳系統</div>
       <div class="expense-form-card">
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
-          <div style="width: 100%; overflow: hidden;"><span class="input-label">📅 日期</span><input type="date" class="input-field" v-model="newExp.date"></div>
-          <div style="width: 100%; overflow: hidden;"><span class="input-label">💰 幣別</span>
-            <select class="input-field" v-model="newExp.currency"><option v-for="c in currentTrip.currencies" :value="c.code">{{ c.code }}</option></select>
+        <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+          <div style="flex: 1; min-width: 0;">
+            <span class="input-label">📅 日期</span>
+            <input type="date" class="input-field" v-model="newExp.date">
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <span class="input-label">💰 幣別</span>
+            <select class="input-field" v-model="newExp.currency">
+              <option v-for="c in currentTrip.currencies" :value="c.code">{{ c.code }}</option>
+            </select>
           </div>
         </div>
+
         <div class="input-row">
           <div><span class="input-label">🏷️ 項目名稱</span><input type="text" class="input-field" v-model="newExp.desc" placeholder="晚餐"></div>
           <div><span class="input-label">💵 金額</span><input type="number" class="input-field" v-model="newExp.amount"><div v-if="newExp.currency !== 'TWD' && newExp.amount" style="font-size:12px; color:var(--accent-main); margin-top:6px; font-weight:800;">≈ NT$ {{ twdHint }}</div></div>
@@ -353,10 +365,18 @@
         <div class="input-group" style="flex:3; margin-bottom:15px;"><label class="input-label">城市</label><input type="text" class="input-field" v-model="newTripForm.city" placeholder="曼谷"></div>
       </div>
       <div class="input-group" style="margin-bottom:15px;"><label class="input-label">自訂團名 (選填)</label><input type="text" class="input-field" v-model="newTripForm.customName" placeholder="例如：曼谷姊妹淘旅行"></div>
-      <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 24px;">
-        <div style="width: 100%;"><label class="input-label">出發日期</label><input type="date" class="input-field" v-model="newTripForm.startDate"></div>
-        <div style="width: 100%;"><label class="input-label">回程日期</label><input type="date" class="input-field" v-model="newTripForm.endDate"></div>
+      
+      <div style="display: flex; gap: 10px; margin-bottom: 24px;">
+        <div style="flex: 1; min-width: 0;">
+          <label class="input-label">出發日期</label>
+          <input type="date" class="input-field" v-model="newTripForm.startDate">
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <label class="input-label">回程日期</label>
+          <input type="date" class="input-field" v-model="newTripForm.endDate">
+        </div>
       </div>
+
       <div style="display: flex; gap: 10px;">
         <button class="btn-primary" @click="saveTrip" style="flex: 2;">💾 儲存設定</button>
         <button v-if="editingTripId" class="btn-primary" @click="deleteTrip" style="flex: 1; background: #FFF4E5; color: #D34F3F; border: 1px solid #D34F3F; box-shadow: none;">🗑️ 刪除</button>
@@ -446,7 +466,9 @@
 
       <div style="margin-top:20px; padding-top:20px; border-top:1px dashed var(--border-color);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;"><label class="input-label" style="margin:0;">🚗 自駕租車</label><button @click="infoForm.rentals.push({company:'', pickupDate:'', pickupTime:'', equip:''})" class="btn-small">➕ 新增</button></div>
-        <div v-for="(r, i) in infoForm.rentals" :key="'er'+i" style="background:white; padding:12px; border-radius:12px; margin-top:10px; border:1px solid var(--border-color);"><input type="text" class="input-field" v-model="r.company" placeholder="租車公司與車型" style="margin-bottom:8px;"><div style="display:flex; gap:8px; margin-bottom:8px;"><input type="date" class="input-field" v-model="r.pickupDate" style="flex:1;"><input type="time" class="input-field" v-model="r.pickupTime" style="flex:1;"></div><input type="text" class="input-field" v-model="r.equip" placeholder="備註配備" style="margin-bottom:8px;"><button @click="infoForm.rentals.splice(i, 1)" style="color:#D34F3F; background:none; border:none; font-size:12px; font-weight:800; cursor:pointer;">🗑️ 刪除</button></div>
+        <div v-for="(r, i) in infoForm.rentals" :key="'er'+i" style="background:white; padding:12px; border-radius:12px; margin-top:10px; border:1px solid var(--border-color);"><input type="text" class="input-field" v-model="r.company" placeholder="租車公司與車型" style="margin-bottom:8px;">
+        <div style="display:flex; gap:8px; margin-bottom:8px;"><input type="date" class="input-field" v-model="r.pickupDate" style="flex:1; min-width:0;"><input type="time" class="input-field" v-model="r.pickupTime" style="flex:1; min-width:0;"></div>
+        <input type="text" class="input-field" v-model="r.equip" placeholder="備註配備" style="margin-bottom:8px;"><button @click="infoForm.rentals.splice(i, 1)" style="color:#D34F3F; background:none; border:none; font-size:12px; font-weight:800; cursor:pointer;">🗑️ 刪除</button></div>
       </div>
 
       <div style="margin-top:20px; padding-top:20px; border-top:1px dashed var(--border-color);">
