@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>☕ Roamly Pro (雲端同步終極版) 🧸</title>
+<title>☕ Roamly Pro (AI 交通導航版) 🧸</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
@@ -33,8 +33,8 @@
   .country-card:active { transform: scale(0.97); }
   .country-img { width: 100%; height: 100%; object-fit: cover; }
   .country-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(74, 64, 54, 0.8) 0%, rgba(0,0,0,0) 60%); display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; }
-  .country-name { color: white; font-size: 24px; font-weight: 800; letter-spacing: 1px; }
-  .country-date { color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 700; margin-top: 4px; }
+  .country-name { color: white; font-size: 24px; font-weight: 800; letter-spacing: 1px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+  .country-date { color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 700; margin-top: 4px; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
 
   /* Header & Nav */
   .app-inner-header { padding: 16px 20px; display: flex; align-items: center; gap: 12px; background: rgba(247, 244, 240, 0.85); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 50; border-bottom: 1px solid rgba(214, 198, 182, 0.4); }
@@ -55,9 +55,7 @@
   .btn-primary { width: 100%; padding: 14px; border-radius: var(--radius-md); border: none; background: var(--accent-main); color: white; font-size: 15px; font-weight: 800; box-shadow: 0 4px 12px rgba(180, 132, 108, 0.3); cursor: pointer; }
   .btn-small { padding: 8px 14px; border-radius: 8px; background: var(--accent-sub); color: white; font-weight: 800; font-size: 13px; border: none; cursor: pointer; }
   
-  /* 🌟 修正欄位排版設定 🌟 */
   .input-field { width: 100%; min-width: 0; max-width: 100%; padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-color); font-size: 14px; font-weight: 700; color: var(--text-main); outline: none; box-sizing: border-box; }
-  /* 特別針對日期與時間輸入框縮減左右 padding，避免手機螢幕太窄擠壓字體重疊 */
   input[type="date"].input-field, input[type="time"].input-field { padding: 12px 6px; font-size: 13px; letter-spacing: -0.5px; }
   
   .input-label { font-size: 13px; font-weight: 800; color: var(--accent-main); margin-bottom: 6px; display: block; }
@@ -271,12 +269,12 @@
       <div class="section-header">💸 記帳與分帳系統</div>
       <div class="expense-form-card">
         
-        <div style="display: flex; gap: 10px; margin-bottom: 12px;">
-          <div style="flex: 1; min-width: 0;">
+        <div style="display: flex; gap: 10px; margin-bottom: 12px; width: 100%;">
+          <div style="flex: 1 1 50%; min-width: 0; max-width: 50%;">
             <span class="input-label">📅 日期</span>
             <input type="date" class="input-field" v-model="newExp.date">
           </div>
-          <div style="flex: 1; min-width: 0;">
+          <div style="flex: 1 1 50%; min-width: 0; max-width: 50%;">
             <span class="input-label">💰 幣別</span>
             <select class="input-field" v-model="newExp.currency">
               <option v-for="c in currentTrip.currencies" :value="c.code">{{ c.code }}</option>
@@ -324,25 +322,37 @@
       <div style="padding: 0 20px;"><button class="btn-primary" @click="openAddChecklist" style="margin-bottom: 30px;">➕ 新增項目</button></div>
     </div>
 
-    <div v-show="activeTab === 'mtr'">
-      <div class="section-header">🚇 港鐵即時路線規劃</div>
-      <div class="mtr-card">
-        <div style="font-size:13px; color:var(--text-light); font-weight:800; margin-bottom:16px; line-height:1.5;">
-          輸入你想去的車站，一鍵開啟 Google Maps 幫你計算最快的港鐵搭乘與轉乘路線！
+    <div v-show="activeTab === 'transit'">
+      <div class="section-header">🚇 交通與導航中心</div>
+      
+      <div style="background:white; border-radius:var(--radius-md); padding:20px; margin:0 20px 20px; border:1px solid var(--border-color); border-left:4px solid #5B7A8C; box-shadow:var(--shadow-card);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px dashed rgba(214,198,182,0.5); padding-bottom:10px;">
+          <div style="font-size:15px; font-weight:900; color:#5B7A8C;">💡 當地交通新手指南</div>
+          <button class="btn-small" style="padding:6px 12px; background:#5B7A8C;" @click="generateTransitGuide" :disabled="isGeneratingGuide">
+            {{ isGeneratingGuide ? '⏳ 撰寫中...' : '✨ AI 幫我寫' }}
+          </button>
+        </div>
+        <textarea class="input-field" v-model="currentTrip.info.transitGuide" rows="5" placeholder="點擊上方按鈕，讓 AI 為你生成專屬的當地交通卡建議與防坑指南... 你也可以隨時在這裡寫下你自己的交通筆記唷！" style="background:#FDFBF7; border:none; resize:none; font-size:13px; line-height:1.6;"></textarea>
+      </div>
+
+      <div class="mtr-card" style="border-left:4px solid var(--accent-main);">
+        <div style="font-size:15px; font-weight:800; color:var(--text-main); margin-bottom:12px;">🕒 即時時刻與路線查詢</div>
+        <div style="font-size:12px; color:var(--text-light); font-weight:700; margin-bottom:16px; line-height:1.5;">
+          連動全球交通數據庫，尋找最快的地鐵或公車路線！<br><span style="color:var(--accent-main);">*將無縫開啟原生 Google Maps 以確保你能看到即時誤點資訊與倒數。</span>
         </div>
         <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
-          <div><label class="input-label">出發車站</label><input type="text" class="input-field" v-model="mtrForm.start" placeholder="例如：尖沙咀"></div>
+          <div><input type="text" class="input-field" v-model="transitForm.start" placeholder="出發地 (例如: 飯店)"></div>
           <div style="text-align:center; color:var(--border-color); font-size:20px; margin:-8px 0;">⬇</div>
-          <div><label class="input-label">抵達車站</label><input type="text" class="input-field" v-model="mtrForm.end" placeholder="例如：中環"></div>
+          <div><input type="text" class="input-field" v-model="transitForm.end" placeholder="目的地 (例如: 景點)"></div>
         </div>
-        <button class="btn-primary" @click="searchMTR">🔍 開啟路線導航</button>
+        <button class="btn-primary" @click="searchTransit">🔍 開啟即時導航</button>
       </div>
       
       <div style="margin: 0 20px 30px; border-radius:16px; overflow:hidden; border:1px solid var(--border-color); box-shadow:var(--shadow-card);">
-        <div style="background:var(--accent-main); color:white; padding:10px; text-align:center; font-weight:800; font-size:14px;">🗺️ 港鐵路線總圖參考</div>
-        <a href="https://www.mtr.com.hk/archive/ch/services/maps/routemap.pdf" target="_blank" style="display:block; background:#fff; text-align:center; padding:30px 10px; color:var(--accent-sub); text-decoration:none; font-weight:800;">
+        <div style="background:var(--accent-main); color:white; padding:10px; text-align:center; font-weight:800; font-size:14px;">🗺️ 尋找當地地鐵圖</div>
+        <a :href="'https://www.google.com/search?q=' + encodeURIComponent(currentTrip.city + '地鐵圖 最新 官方') + '&tbm=isch'" target="_blank" style="display:block; background:#fff; text-align:center; padding:30px 10px; color:var(--accent-sub); text-decoration:none; font-weight:800;">
           <div style="font-size:32px; margin-bottom:10px;">🗺️</div>
-          點擊查看高畫質<br>官方港鐵路線圖 (PDF)
+          點擊搜尋【{{ currentTrip.city }}】<br>最新地鐵路線圖
         </a>
       </div>
     </div>
@@ -353,7 +363,7 @@
       <button class="nav-item" :class="{active: activeTab==='packing'}" @click="activeTab='packing'"><span class="nav-icon">🧳</span><span class="nav-label">行李</span></button>
       <button class="nav-item" :class="{active: activeTab==='split'}" @click="activeTab='split'"><span class="nav-icon">💰</span><span class="nav-label">記帳</span></button>
       <button class="nav-item" :class="{active: activeTab==='checklist'}" @click="activeTab='checklist'"><span class="nav-icon">🛍️</span><span class="nav-label">清單</span></button>
-      <button class="nav-item" v-if="currentTrip.city === '香港' || currentTrip.city.includes('香港')" :class="{active: activeTab==='mtr'}" @click="activeTab='mtr'"><span class="nav-icon">🚇</span><span class="nav-label">港鐵</span></button>
+      <button class="nav-item" :class="{active: activeTab==='transit'}" @click="activeTab='transit'"><span class="nav-icon">🚇</span><span class="nav-label">導航</span></button>
     </nav>
   </div>
 
@@ -366,12 +376,12 @@
       </div>
       <div class="input-group" style="margin-bottom:15px;"><label class="input-label">自訂團名 (選填)</label><input type="text" class="input-field" v-model="newTripForm.customName" placeholder="例如：曼谷姊妹淘旅行"></div>
       
-      <div style="display: flex; gap: 10px; margin-bottom: 24px;">
-        <div style="flex: 1; min-width: 0;">
+      <div style="display: flex; gap: 10px; margin-bottom: 24px; width: 100%;">
+        <div style="flex: 1 1 50%; min-width: 0; max-width: 50%;">
           <label class="input-label">出發日期</label>
           <input type="date" class="input-field" v-model="newTripForm.startDate">
         </div>
-        <div style="flex: 1; min-width: 0;">
+        <div style="flex: 1 1 50%; min-width: 0; max-width: 50%;">
           <label class="input-label">回程日期</label>
           <input type="date" class="input-field" v-model="newTripForm.endDate">
         </div>
@@ -425,7 +435,7 @@
         </div>
       </div>
       <div style="margin-bottom:15px; width: 100%; overflow: hidden;"><label class="input-label">訂位/票券資訊 (選填)</label><input type="text" class="input-field" v-model="schedForm.reservation"></div>
-      <div style="margin-bottom:15px; width: 100%; overflow: hidden;"><label class="input-label">交通</label><select class="input-field" v-model="schedForm.transit"><option value="">無 / 步行</option><option value="Grab / 計程車">Grab / 計程車</option><option value="地鐵 MTR">地鐵 MTR</option><option value="機場快線">機場快線</option><option value="專車接送">專車接送</option></select></div>
+      <div style="margin-bottom:15px; width: 100%; overflow: hidden;"><label class="input-label">交通</label><select class="input-field" v-model="schedForm.transit"><option value="">無 / 步行</option><option value="Grab / 計程車">Grab / 計程車</option><option value="地鐵 MTR">地鐵 MTR</option><option value="機場快線">機場快線</option><option value="公車">公車</option><option value="專車接送">專車接送</option></select></div>
       <div style="margin-bottom:15px; width: 100%; overflow: hidden;"><label class="input-label">備註</label><textarea class="input-field" v-model="schedForm.note" rows="2"></textarea></div>
       <button class="btn-primary" @click="saveSchedule">💾 儲存</button>
     </div>
@@ -556,6 +566,7 @@ createApp({
     const editingTripId = ref(null);
     const draggedIndex = ref(null);
     const isGeneratingAi = ref(false);
+    const isGeneratingGuide = ref(false);
     const apiKeyInput = ref('');
     const apiKeyMessage = ref({ type: '', text: '' }); 
 
@@ -568,13 +579,21 @@ createApp({
     const checkForm = reactive({ type: 'buy', item: '', place: '', amount: '', currency: 'THB', img: null });
     const newExp = reactive({ date: new Date().toISOString().split('T')[0], desc: '', amount: '', currency: 'THB', payMethod: '信用卡', payer: '我', isPersonal: false, splits: ['我', '先生'] });
     const schedForm = reactive({ time: '09:00', place: '', reservation: '', note: '', transit: '', travelTime: '', transitRoute: '', aiInsight: { feature: '', tip: '', mustTry: '', photoSpot: '' } });
-    const infoForm = reactive({ arrivalCard: '', arrivalCardImg: null, flights: [], hotels: [], rentals: [], insurance: '' });
+    const infoForm = reactive({ arrivalCard: '', arrivalCardImg: null, flights: [], hotels: [], rentals: [], insurance: '', transitGuide: '' });
     const newPackItem = ref('');
     const newTripForm = reactive({ city: '', flag: '', customName: '', startDate: '', endDate: '' });
     
-    // 香港地鐵專用表單
-    const mtrForm = reactive({ start: '', end: '' });
+    // 萬用大眾運輸表單
+    const transitForm = reactive({ start: '', end: '' });
 
+    const openApiKeyModal = () => { apiKeyInput.value = localStorage.getItem('roamly_api_key') || ''; apiKeyMessage.value = { type: '', text: '' }; showApiKeyModal.value = true; };
+    const saveApiKey = () => {
+      if (!apiKeyInput.value.trim().startsWith('AIza')) { apiKeyMessage.value = { type: 'error', text: '❌ 格式錯誤！' }; return; }
+      localStorage.setItem('roamly_api_key', apiKeyInput.value.trim()); apiKeyMessage.value = { type: 'success', text: '✅ 儲存成功！' };
+      setTimeout(() => { showApiKeyModal.value = false; }, 1000);
+    };
+
+    // 🌟 AI 行程情報生成 🌟
     const generateRealAiInsight = async () => {
       if (!schedForm.place) return alert('請先輸入你要去的地點名稱！');
       const savedKey = localStorage.getItem('roamly_api_key');
@@ -582,7 +601,7 @@ createApp({
       isGeneratingAi.value = true;
       schedForm.aiInsight = { feature: '⏳ 思考中...', tip: 'AI 正在分析...', mustTry: '', photoSpot: '' };
 
-      const modelsToTry = [{ version: 'v1', name: 'gemini-2.5-flash' }, { version: 'v1beta', name: 'gemini-2.5-flash' }, { version: 'v1', name: 'gemini-2.0-flash' }, { version: 'v1beta', name: 'gemini-2.0-flash' }, { version: 'v1', name: 'gemini-1.5-flash' }];
+      const modelsToTry = [{ version: 'v1', name: 'gemini-2.5-flash' }, { version: 'v1beta', name: 'gemini-2.5-flash' }, { version: 'v1', name: 'gemini-2.0-flash' }, { version: 'v1beta', name: 'gemini-2.0-flash' }];
       const prompt = `你是一個專業的當地導遊。請針對旅遊地點「${schedForm.place}」提供：1. 亮點(10字內) 2. 實用秘訣(20字內) 3. 必吃美食或必玩體驗(15字內) 4. 最佳拍照打卡點(15字內)。請絕對以嚴格的 JSON 格式回傳，格式為：{"feature": "...", "tip": "...", "mustTry": "...", "photoSpot": "..."}`;
       
       let finalResult = null;
@@ -601,17 +620,38 @@ createApp({
       isGeneratingAi.value = false;
     };
 
-    const openApiKeyModal = () => { apiKeyInput.value = localStorage.getItem('roamly_api_key') || ''; apiKeyMessage.value = { type: '', text: '' }; showApiKeyModal.value = true; };
-    const saveApiKey = () => {
-      if (!apiKeyInput.value.trim().startsWith('AIza')) { apiKeyMessage.value = { type: 'error', text: '❌ 格式錯誤！' }; return; }
-      localStorage.setItem('roamly_api_key', apiKeyInput.value.trim()); apiKeyMessage.value = { type: 'success', text: '✅ 儲存成功！' };
-      setTimeout(() => { showApiKeyModal.value = false; }, 1000);
+    // 🌟 AI 交通新手指南生成 🌟
+    const generateTransitGuide = async () => {
+      const savedKey = localStorage.getItem('roamly_api_key');
+      if (!savedKey) { showApiKeyModal.value = true; return; }
+      
+      if (!currentTrip.value.info.transitGuide) currentTrip.value.info.transitGuide = '';
+      
+      isGeneratingGuide.value = true;
+      currentTrip.value.info.transitGuide = '⏳ AI 正在為您整理當地交通生存指南，請稍候...';
+
+      const modelsToTry = [{ version: 'v1', name: 'gemini-2.5-flash' }, { version: 'v1beta', name: 'gemini-2.5-flash' }, { version: 'v1', name: 'gemini-2.0-flash' }];
+      const prompt = `你是專業當地導遊。請針對第一次去旅遊的城市「${currentTrip.value.city}」寫一段約100字以內的交通新手指南。必須包含：1. 當地必買的交通票卡名稱 2. 主要搭乘什麼交通工具最方便 3. 一個防坑或實用小提醒。請直接輸出純文字段落，不要使用Markdown符號。`;
+      
+      let finalResult = null;
+      for (const modelConfig of modelsToTry) {
+        try {
+          const res = await fetch(`https://generativelanguage.googleapis.com/${modelConfig.version}/models/${modelConfig.name}:generateContent?key=${savedKey.trim()}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
+          if (!res.ok) { if (res.status === 404) continue; throw new Error(`Error: ${res.status}`); }
+          const data = await res.json();
+          if (data && data.candidates) {
+             finalResult = data.candidates[0].content.parts[0].text.trim(); break; 
+          }
+        } catch (e) { if (!e.message.includes('404')) break; }
+      }
+      currentTrip.value.info.transitGuide = finalResult || '❌ 連線失敗，請確認金鑰或網路連線。';
+      isGeneratingGuide.value = false;
     };
 
     const defaultTrips = [
-      { id: 'bkk_friends', city: '曼谷', flag: '🇹🇭', customName: '✨ 曼谷醫美SPA之旅', startDate: '2026-05-15', endDate: '2026-05-17', coverImg: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800', currencies: [{code: 'THB', rate: 0.88}, {code: 'TWD', rate: 1}], info: { arrivalCard: '泰國免簽證，持護照直接通關。', arrivalCardImg: null, flights: [{type: '🛫 去程', details: 'CI837 22:40', seats: '未劃位'}, {type: '🛬 回程', details: 'CI838 02:40', seats: ''}], hotels: [{name: '曼谷市區飯店', dateRange: '5/15-5/17', booker: '我', rooms: '雙人房', amenities: '無邊際泳池', nearby: 'BTS Asok 站'}], rentals: [], insurance: '國泰產險 XXXX-1234' }, packingList: [], days: [{ date: '15', dateStr: '05/15', weekday: '五', schedule: []}], checklist: [], expenses: [] },
-      { id: 'hk_birthday', city: '香港', flag: '🇭🇰', customName: '🎂 30歲維港慶生', startDate: '2026-07-10', endDate: '2026-07-12', coverImg: 'https://images.unsplash.com/photo-1541959833400-049d37f98ccd?w=800', currencies: [{code: 'HKD', rate: 4.15}, {code: 'TWD', rate: 1}], info: { arrivalCard: '需上網申請港簽或帶台胞證。', arrivalCardImg: null, flights: [], hotels: [{name: '維港景觀飯店', dateRange: '7/10-7/12', booker: '先生', rooms: '海景雙人房', amenities: '', nearby: ''}], rentals: [], insurance: '' }, packingList: [{id: 1, name: '護照 & 港簽', checked: false}, {id: 2, name: '慶生漂亮洋裝', checked: false}], days: [{ date: '10', dateStr: '07/10', weekday: '五', schedule: [{id: 201, time: '19:00', place: '維多利亞港景觀餐廳', reservation: '靠窗座位', note: '生日晚餐驚喜', transit: '地鐵 MTR', travelTime: '約 15 分鐘', aiInsight: {feature: '百萬夜景相伴', tip: '靠窗座位要提早一個月訂', mustTry: '招牌海鮮拼盤', photoSpot: '與維港夜景舉杯合照'}}]}, { date: '11', dateStr: '07/11', weekday: '六', schedule: [] }, { date: '12', dateStr: '07/12', weekday: '日', schedule: [] }], checklist: [], expenses: [] },
-      { id: 'bki_family', city: '亞庇', flag: '🇲🇾', customName: '🌊 沙巴家族海島遊', startDate: '2026-08-20', endDate: '2026-08-25', coverImg: 'https://images.unsplash.com/photo-1544918877-460635b6d13e?w=800', currencies: [{code: 'MYR', rate: 7.2}, {code: 'TWD', rate: 1}], info: { arrivalCard: '需填寫馬來西亞 MDAC 數位入境卡。', arrivalCardImg: null, flights: [], hotels: [], rentals: [], insurance: '家族旅平險' }, packingList: [{id: 1, name: '護照 & MDAC 截圖', checked: false}], days: [{ date: '20', dateStr: '08/20', weekday: '四', schedule: [{id: 301, time: '14:00', place: '抵達亞庇機場', note: '前往飯店寄放行李', transit: 'Grab / 計程車'}]}, { date: '21', dateStr: '08/21', weekday: '五', schedule: [{id: 302, time: '09:00', place: '美人魚島', note: '帶小孩玩沙', aiInsight: {feature: '絕美白沙灘與漸層海', tip: '記得準備海洋友善防曬乳', mustTry: '浮潛看海龜', photoSpot: '清澈見底的玻璃船'}}]}, { date: '22', dateStr: '08/22', weekday: '六', schedule: [] }, { date: '23', dateStr: '08/23', weekday: '日', schedule: [] }, { date: '24', dateStr: '08/24', weekday: '一', schedule: [] }, { date: '25', dateStr: '08/25', weekday: '二', schedule: [] }], checklist: [], expenses: [] }
+      { id: 'bkk_friends', city: '曼谷', flag: '🇹🇭', customName: '✨ 曼谷醫美SPA之旅', startDate: '2026-05-15', endDate: '2026-05-17', coverImg: 'https://image.pollinations.ai/prompt/Beautiful%20scenic%20landscape%20travel%20photography%20of%20Bangkok%20temple?width=800&height=600&nologo=true', currencies: [{code: 'THB', rate: 0.88}, {code: 'TWD', rate: 1}], info: { arrivalCard: '泰國免簽證，持護照直接通關。', arrivalCardImg: null, flights: [{type: '🛫 去程', details: 'CI837 22:40', seats: '未劃位'}, {type: '🛬 回程', details: 'CI838 02:40', seats: ''}], hotels: [{name: '曼谷市區飯店', dateRange: '5/15-5/17', booker: '我', rooms: '雙人房', amenities: '無邊際泳池', nearby: 'BTS Asok 站'}], rentals: [], insurance: '國泰產險 XXXX-1234', transitGuide: '' }, packingList: [], days: [{ date: '15', dateStr: '05/15', weekday: '五', schedule: []}], checklist: [], expenses: [] },
+      { id: 'hk_birthday', city: '香港', flag: '🇭🇰', customName: '🎂 30歲維港慶生', startDate: '2026-07-10', endDate: '2026-07-12', coverImg: 'https://image.pollinations.ai/prompt/Beautiful%20scenic%20landscape%20travel%20photography%20of%20Victoria%20Harbour%20Hong%20Kong%20night?width=800&height=600&nologo=true', currencies: [{code: 'HKD', rate: 4.15}, {code: 'TWD', rate: 1}], info: { arrivalCard: '需上網申請港簽或帶台胞證。', arrivalCardImg: null, flights: [], hotels: [{name: '維港景觀飯店', dateRange: '7/10-7/12', booker: '先生', rooms: '海景雙人房', amenities: '', nearby: ''}], rentals: [], insurance: '', transitGuide: '' }, packingList: [{id: 1, name: '護照 & 港簽', checked: false}, {id: 2, name: '慶生漂亮洋裝', checked: false}], days: [{ date: '10', dateStr: '07/10', weekday: '五', schedule: [{id: 201, time: '19:00', place: '維多利亞港景觀餐廳', reservation: '靠窗座位', note: '生日晚餐驚喜', transit: '地鐵 MTR', travelTime: '約 15 分鐘', aiInsight: {feature: '百萬夜景相伴', tip: '靠窗座位要提早一個月訂', mustTry: '招牌海鮮拼盤', photoSpot: '與維港夜景舉杯合照'}}]}, { date: '11', dateStr: '07/11', weekday: '六', schedule: [] }, { date: '12', dateStr: '07/12', weekday: '日', schedule: [] }], checklist: [], expenses: [] },
+      { id: 'bki_family', city: '亞庇', flag: '🇲🇾', customName: '🌊 沙巴家族海島遊', startDate: '2026-08-20', endDate: '2026-08-25', coverImg: 'https://image.pollinations.ai/prompt/Beautiful%20scenic%20landscape%20travel%20photography%20of%20Kota%20Kinabalu%20beach?width=800&height=600&nologo=true', currencies: [{code: 'MYR', rate: 7.2}, {code: 'TWD', rate: 1}], info: { arrivalCard: '需填寫馬來西亞 MDAC 數位入境卡。', arrivalCardImg: null, flights: [], hotels: [], rentals: [], insurance: '家族旅平險', transitGuide: '' }, packingList: [{id: 1, name: '護照 & MDAC 截圖', checked: false}], days: [{ date: '20', dateStr: '08/20', weekday: '四', schedule: [{id: 301, time: '14:00', place: '抵達亞庇機場', note: '前往飯店寄放行李', transit: 'Grab / 計程車'}]}, { date: '21', dateStr: '08/21', weekday: '五', schedule: [{id: 302, time: '09:00', place: '美人魚島', note: '帶小孩玩沙', aiInsight: {feature: '絕美白沙灘與漸層海', tip: '記得準備海洋友善防曬乳', mustTry: '浮潛看海龜', photoSpot: '清澈見底的玻璃船'}}]}, { date: '22', dateStr: '08/22', weekday: '六', schedule: [] }, { date: '23', dateStr: '08/23', weekday: '日', schedule: [] }, { date: '24', dateStr: '08/24', weekday: '一', schedule: [] }, { date: '25', dateStr: '08/25', weekday: '二', schedule: [] }], checklist: [], expenses: [] }
     ];
 
     const trips = ref(JSON.parse(JSON.stringify(defaultTrips)));
@@ -643,7 +683,7 @@ createApp({
     const currentTrip = computed(() => trips.value.find(t => t.id === selectedTrip.value) || trips.value[0]);
     const currentDayData = computed(() => currentTrip.value.days[selectedDay.value] || currentTrip.value.days[0]);
 
-    const enterTrip = (id) => { selectedTrip.value = id; selectedDay.value = 0; currentView.value = 'app'; activeTab.value = 'itinerary'; newExp.currency = currentTrip.value.currencies[0].code; };
+    const enterTrip = (id) => { selectedTrip.value = id; selectedDay.value = 0; currentView.value = 'app'; activeTab.value = 'itinerary'; newExp.currency = currentTrip.value.currencies[0].code; transitForm.start = ''; transitForm.end = ''; };
     const displayDates = (s, e) => s ? `${s.replace(/-/g, '/')} - ${e.substring(5).replace(/-/g, '/')}` : '';
 
     const saveTrip = () => {
@@ -656,10 +696,12 @@ createApp({
         currentTrip.value.days = newD;
         if(selectedDay.value >= newD.length) selectedDay.value = 0;
       } else {
+        const aiImgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent('Beautiful scenic landscape travel photography of ' + newTripForm.city + ' landmark')}?width=800&height=600&nologo=true`;
+        
         trips.value.push({
           id: 't_' + Date.now(), city: newTripForm.city, flag: newTripForm.flag || '✈️', customName: newTripForm.customName, startDate: s, endDate: e,
-          coverImg: `https://loremflickr.com/800/600/${encodeURIComponent(newTripForm.city)}`, currencies: [{ code: 'USD', rate: 32 }, { code: 'TWD', rate: 1 }],
-          info: { arrivalCard: '', arrivalCardImg: null, flights: [], hotels: [], rentals: [], insurance: '' }, packingList: [], checklist: [], expenses: [], days: generateDays(s, e)
+          coverImg: aiImgUrl, currencies: [{ code: 'USD', rate: 32 }, { code: 'TWD', rate: 1 }],
+          info: { arrivalCard: '', arrivalCardImg: null, flights: [], hotels: [], rentals: [], insurance: '', transitGuide: '' }, packingList: [], checklist: [], expenses: [], days: generateDays(s, e)
         });
       }
       showTripModal.value = false;
@@ -694,7 +736,6 @@ createApp({
     const addPackItem = () => { if(newPackItem.value.trim()) { currentTrip.value.packingList.push({ id: Date.now(), name: newPackItem.value.trim(), checked: false }); newPackItem.value = ''; } };
     const deletePackItem = (i) => currentTrip.value.packingList.splice(i, 1);
     
-    // 編輯詳細資訊
     const editInfo = () => { 
       Object.assign(infoForm, JSON.parse(JSON.stringify(currentTrip.value.info))); 
       if(!infoForm.rentals) infoForm.rentals = []; 
@@ -739,19 +780,22 @@ createApp({
       showAddChecklist.value = false;
     };
 
-    // 港鐵導航按鈕
-    const searchMTR = () => {
-      if(!mtrForm.start || !mtrForm.end) return alert('請輸入起點和終點站！');
-      const url = 'https://www.google.com/maps/dir/?api=1&origin=' + encodeURIComponent(mtrForm.start+'站,香港') + '&destination=' + encodeURIComponent(mtrForm.end+'站,香港') + '&travelmode=transit';
+    // 🌟 萬用導航功能 🌟
+    const searchTransit = () => {
+      if(!transitForm.start || !transitForm.end) return alert('請輸入起點和終點！');
+      const city = currentTrip.value.city;
+      const origin = encodeURIComponent(`${transitForm.start} ${city}`);
+      const destination = encodeURIComponent(`${transitForm.end} ${city}`);
+      const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=transit`;
       window.open(url, '_blank');
     };
 
     return {
       currentView, activeTab, trips, currentTrip, selectedDay, currentDayData, displayDates,
       showAddChecklist, showAddSchedule, showTripModal, showEditInfo, editingSchedule, editingChecklist, editingTripId, draggedIndex,
-      showApiKeyModal, apiKeyInput, apiKeyMessage, isGeneratingAi, saveApiKey, generateRealAiInsight, openApiKeyModal,
+      showApiKeyModal, apiKeyInput, apiKeyMessage, isGeneratingAi, isGeneratingGuide, saveApiKey, generateRealAiInsight, generateTransitGuide, openApiKeyModal,
       checkForm, newExp, schedForm, infoForm, newPackItem, newTripForm, members, newMemberName, twdHint, isConnected,
-      mtrForm, searchMTR,
+      transitForm, searchTransit,
       openMap: (place) => window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(place), '_blank'),
       enterTrip, saveTrip, deleteTrip, addPackItem, deletePackItem, editInfo, saveInfo, onImageUpload,
       openAddTripModal: () => { editingTripId.value = null; const today = new Date().toISOString().split('T')[0]; Object.assign(newTripForm, { city: '', flag: '', customName: '', startDate: today, endDate: today }); showTripModal.value = true; },
