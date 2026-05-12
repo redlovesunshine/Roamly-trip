@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>🧸 Roamly </title>
+<title> 🥨 Roamly Pro</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
@@ -78,8 +78,9 @@ body {
 
 .input-wrap { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;}
 .input-label { font-size: 11px; font-weight: 900; color: var(--accent); letter-spacing: 0.05em; text-transform: uppercase; }
+
 .input-field {
-  width: 100%; padding: 14px; border-radius: var(--r-md);
+  width: 100%; padding: 12px 10px; border-radius: var(--r-md);
   border: 1.5px solid var(--border); background: var(--surface);
   font-size: 14px; font-weight: 800; color: var(--text); outline: none;
   transition: border-color var(--transition), box-shadow var(--transition);
@@ -158,7 +159,8 @@ body {
 .timeline-place { font-weight: 900; font-size: 16px; color: var(--text); display: flex; align-items: flex-start; gap: 6px; flex: 1; padding-right: 10px; line-height: 1.4; }
 .nav-btn { display: inline-flex; align-items: center; background: var(--blue-light); color: var(--blue); padding: 6px 12px; border-radius: 50px; font-size: 12px; font-weight: 900; text-decoration: none; border: 1px solid #CBE4FA; }
 .timeline-features { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
-.timeline-note { font-size: 14px; color: var(--text-muted); line-height: 1.6; background: #FDFBF7; padding: 12px; border-radius: var(--r-md); margin-top: 10px; border: 1px dashed var(--border); font-weight: 700; }
+.timeline-hours { font-size: 13px; color: var(--blue); font-weight: 800; margin-top: 8px; display: flex; align-items: center; gap: 6px; }
+.timeline-note { font-size: 13px; color: var(--text-muted); line-height: 1.6; background: #FDFBF7; padding: 12px 14px; border-radius: 0 var(--r-md) var(--r-md) 0; margin-top: 10px; border-left: 3px solid var(--accent); font-weight: 700; white-space: pre-wrap; }
 
 .sub-nav { display: flex; gap: 10px; overflow-x: auto; padding: 0 20px 16px; scrollbar-width: none; }
 .sub-nav::-webkit-scrollbar { display: none; }
@@ -215,8 +217,8 @@ body {
   <div class="login-view" style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; background: linear-gradient(160deg, var(--bg) 0%, var(--accent-light) 60%, #e8f0f5 100%);" v-if="currentView === 'login'">
     <div style="font-size:64px; margin-bottom:16px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));">🥂🌴</div>
     <div style="background: white; width: 100%; border-radius: 30px; padding: 40px 24px; box-shadow: var(--shadow-lg); border: 1px solid var(--border); text-align: center;">
-      <div style="font-size: 30px; font-weight: 900; color: var(--accent);">Roamly</div>
-      <div style="font-size: 14px; font-weight: 700; color: var(--text-muted); margin-top: 6px; margin-bottom: 32px;">輸入名字，開啟專屬旅程🎈</div>
+      <div style="font-size: 30px; font-weight: 900; color: var(--accent);">Roamly Pro</div>
+      <div style="font-size: 14px; font-weight: 700; color: var(--text-muted); margin-top: 6px; margin-bottom: 32px;">輸入名字，開啟專屬旅程🍹</div>
 
       <div class="input-wrap" style="text-align:left;" v-if="!showAdminLogin">
         <label class="input-label">妳的名字 / 暱稱</label>
@@ -269,8 +271,7 @@ body {
 
     <div v-show="activeTab === 'itinerary'" class="tab-content">
       <div class="day-scroll">
-        <div v-for="(day, idx) in currentTrip.days" :key="idx"
-          class="day-chip" :class="{active: selectedDay===idx}" @click="selectedDay=idx">
+        <div v-for="(day, idx) in currentTrip.days" :key="idx" class="day-chip" :class="{active: selectedDay===idx}" @click="selectedDay=idx">
           <span class="day-num">Day {{ idx+1 }}</span>
           <span class="day-date">{{ day.dateStr }}</span>
         </div>
@@ -279,9 +280,7 @@ body {
       <div class="weather-card" v-if="currentDayData">
         <div class="weather-header">
           <span>🌤️ 當地天氣與穿搭</span>
-          <button class="weather-btn" @click="fetchWeatherInfo" :disabled="isFetchingWeather">
-            {{ isFetchingWeather ? '預測中...' : '🔄 手動更新' }}
-          </button>
+          <button class="weather-btn" @click="fetchWeatherInfo" :disabled="isFetchingWeather">{{ isFetchingWeather ? '預測中...' : '🔄 手動更新' }}</button>
         </div>
         <div class="weather-grid">
           <div class="weather-item"><span class="wi">🌡️</span><span class="w-val num">{{ isFetchingWeather ? '...' : (currentDayData.weather?.info || '--') }}</span></div>
@@ -316,7 +315,9 @@ body {
               <a :href="item.link" target="_blank" class="tag tag-blue" style="text-decoration:none;" v-if="item.link">🔗 連結</a>
             </div>
             
-            <div class="timeline-note" v-if="item.note">📝 {{ item.note }}</div>
+            <div class="timeline-hours" v-if="item.hours">🕒 營業時間：{{ item.hours }}</div>
+            <div class="timeline-note" v-if="item.note">{{ item.note }}</div>
+            
             <button class="btn-edit-card" @click="editSchedule(i)">✏️ 編輯 / 刪除行程</button>
           </div>
         </div>
@@ -331,7 +332,6 @@ body {
         <div class="sub-tab" :class="{active: infoSubTab==='rental'}" @click="infoSubTab='rental'">🚗 租車</div>
         <div class="sub-tab" :class="{active: infoSubTab==='voucher'}" @click="infoSubTab='voucher'">🎫 憑證</div>
       </div>
-
       <div v-if="infoSubTab==='flight'">
         <div v-if="flightData.mine.length > 0" style="font-size: 15px; font-weight: 900; color: var(--text); margin: 0 20px 16px;">專屬 {{ currentUserName }} 的航班</div>
         <div class="ticket-card" v-for="(f, i) in flightData.mine" :key="'m'+i">
@@ -359,7 +359,6 @@ body {
         </div>
         <div style="padding:0 20px;" v-if="flightData.mine.length === 0"><button class="btn btn-ghost" @click="openEditModal('flight')">➕ 新增機票</button></div>
       </div>
-
       <div v-if="infoSubTab==='hotel'">
         <div class="card" v-for="(h, i) in currentTrip.info.hotels" :key="i">
           <div class="hotel-card">
@@ -378,7 +377,6 @@ body {
         </div>
         <div style="padding:0 20px;"><button class="btn btn-ghost" @click="openEditModal('hotel')">➕ 新增住宿</button></div>
       </div>
-
       <div v-if="infoSubTab==='rental'">
         <div class="card" v-for="(r, i) in currentTrip.info.rentals" :key="i">
           <div class="card-body">
@@ -390,7 +388,6 @@ body {
         </div>
         <div style="padding:0 20px;"><button class="btn btn-ghost" style="border-color:var(--blue);color:var(--blue);" @click="openEditModal('rental')">➕ 新增租車</button></div>
       </div>
-      
       <div v-if="infoSubTab==='voucher'">
         <div class="card">
           <div class="card-body">
@@ -411,7 +408,6 @@ body {
         <div class="sub-tab" :class="{active: listSubTab==='checklist'}" @click="listSubTab='checklist'">🛍️ 必吃必買</div>
         <div class="sub-tab" :class="{active: listSubTab==='wishlist'}" @click="listSubTab='wishlist'">📍 想去景點</div>
       </div>
-
       <div v-if="listSubTab==='packing'">
         <div class="list-input-box">
           <input type="text" class="input-field" v-model="newPackCat" placeholder="分類" style="width:80px; padding:10px;">
@@ -431,7 +427,6 @@ body {
           </div>
         </div>
       </div>
-
       <div v-if="listSubTab==='checklist'">
         <div class="card" v-for="(item, i) in myChecklist" :key="i">
           <div class="card-body">
@@ -446,7 +441,6 @@ body {
         </div>
         <div style="padding:0 20px;"><button class="btn btn-ghost" @click="openAddChecklist">➕ 新增必吃必買</button></div>
       </div>
-
       <div v-if="listSubTab==='wishlist'">
         <div class="card" v-for="(item, i) in myWishlist" :key="i">
           <div class="card-body">
@@ -463,24 +457,17 @@ body {
     </div>
 
     <div v-show="activeTab === 'split'" class="tab-content">
-      
       <div class="personal-expense-card">
         <div class="expense-label">我的旅費總額 (個人花費)</div>
         <div class="expense-amount">NT$ {{ myTotalExpense }}</div>
       </div>
-
       <div style="padding:0 20px;">
-        
         <div class="section-title" style="padding-left:0; padding-top:0;">💸 新增花費</div>
         <div class="card" style="margin: 0 0 20px;">
           <div class="card-body" style="display:flex;flex-direction:column;gap:12px;">
-            <div class="grid-2">
-              <div class="input-wrap"><label class="input-label">📅 日期</label><input type="date" class="input-field" v-model="newExp.date"></div>
-              <div class="input-wrap"><label class="input-label">💰 幣別</label>
-                <select class="input-field" v-model="newExp.currency">
-                  <option v-for="c in currentTrip.currencies" :value="c.code" :key="c.code">{{ c.code }}</option>
-                </select>
-              </div>
+            <div style="display: flex; gap: 10px;">
+              <div class="input-wrap" style="flex: 1.4;"><label class="input-label">📅 日期</label><input type="date" class="input-field" v-model="newExp.date"></div>
+              <div class="input-wrap" style="flex: 1;"><label class="input-label">💰 幣別</label><select class="input-field" v-model="newExp.currency"><option v-for="c in currentTrip.currencies" :value="c.code" :key="c.code">{{ c.code }}</option></select></div>
             </div>
             <div class="input-wrap"><label class="input-label">🏷️ 項目</label><input type="text" class="input-field" v-model="newExp.desc" placeholder="例如：晚餐拉麵"></div>
             <div class="input-wrap">
@@ -491,16 +478,11 @@ body {
             <div style="background:var(--bg);padding:16px;border-radius:var(--r-md);border:1.5px dashed var(--border);">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
                 <span style="font-size:13px;font-weight:900;min-width:64px;">付款人：</span>
-                <select class="input-field" v-model="newExp.payer" style="flex:1;">
-                  <option v-for="m in tripMembers" :key="m" :value="m">{{ m }}</option>
-                </select>
+                <select class="input-field" v-model="newExp.payer" style="flex:1;"><option v-for="m in tripMembers" :key="m" :value="m">{{ m }}</option></select>
               </div>
-              
               <label style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:900; color:var(--accent); margin-bottom:12px; cursor:pointer;">
-                <input type="checkbox" v-model="newExp.isPersonal" style="width:18px;height:18px;accent-color:var(--accent);">
-                👤 個人專屬花費 (不與他人分攤)
+                <input type="checkbox" v-model="newExp.isPersonal" style="width:18px;height:18px;accent-color:var(--accent);">👤 個人專屬花費 (不與他人分攤)
               </label>
-
               <div style="display:flex;align-items:flex-start;gap:10px;" v-if="!newExp.isPersonal">
                 <span style="font-size:13px;font-weight:900;min-width:64px;margin-top:7px;">分攤給：</span>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;flex:1;">
@@ -511,75 +493,43 @@ body {
             <button class="btn btn-primary" style="border-radius:16px; margin-top:8px;" @click="addExpense">💾 儲存花費</button>
           </div>
         </div>
-
-        <div class="section-title" style="padding-left:0; display:flex; justify-content:space-between;">
-          <span>📝 帳目明細 (由新到舊)</span>
-        </div>
-        
+        <div class="section-title" style="padding-left:0; display:flex; justify-content:space-between;"><span>📝 帳目明細 (由新到舊)</span></div>
         <div class="card" style="margin:0 0 16px; padding:16px; display:flex; justify-content:space-between; align-items:center;" :style="{ borderLeft: exp.isPersonal ? '5px solid var(--green)' : '5px solid var(--accent)' }" v-for="(exp, i) in visibleExpenses" :key="i">
           <div>
-            <div style="font-weight: 900; font-size: 15px; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
-              {{ exp.desc }}
-              <span class="tag tag-green" style="padding:2px 6px; font-size:10px;" v-if="exp.isPersonal">個人</span>
-              <span class="tag tag-blue" style="padding:2px 6px; font-size:10px;" v-else>公費</span>
-            </div>
-            <div style="font-size:12px; color:var(--text-muted); font-weight:800;">
-              👤 {{ exp.payer }} 付
-              <span v-if="!exp.isPersonal">｜分攤：{{ exp.splits.join('、') }}</span>
-            </div>
-            <div style="font-size: 12px; font-weight: 800; color: var(--blue); background: var(--blue-light); padding: 4px 8px; border-radius: 6px; margin-top: 8px; display: inline-block;" v-if="!exp.isPersonal && exp.splits.includes(currentUserName)">
-              👉 您需攤 NT$ {{ getTwdShare(exp) }}
-            </div>
+            <div style="font-weight: 900; font-size: 15px; margin-bottom:4px; display:flex; align-items:center; gap:6px;">{{ exp.desc }}<span class="tag tag-green" style="padding:2px 6px; font-size:10px;" v-if="exp.isPersonal">個人</span><span class="tag tag-blue" style="padding:2px 6px; font-size:10px;" v-else>公費</span></div>
+            <div style="font-size:12px; color:var(--text-muted); font-weight:800;">👤 {{ exp.payer }} 付<span v-if="!exp.isPersonal">｜分攤：{{ exp.splits.join('、') }}</span></div>
+            <div style="font-size: 12px; font-weight: 800; color: var(--blue); background: var(--blue-light); padding: 4px 8px; border-radius: 6px; margin-top: 8px; display: inline-block;" v-if="!exp.isPersonal && exp.splits.includes(currentUserName)">👉 您需攤 NT$ {{ getTwdShare(exp) }}</div>
           </div>
           <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
             <span style="font-weight: 900; color: var(--accent); font-size: 15px; font-family: 'Nunito', sans-serif;">{{ exp.currency }} {{ exp.amount }}</span>
             <button @click="deleteExpense(exp.id)" style="border:none;background:var(--bg);color:var(--red);font-size:12px;font-weight:900;padding:4px 8px;border-radius:6px;cursor:pointer;">刪除</button>
           </div>
         </div>
-
         <hr style="border: none; border-top: 2px dashed var(--border); margin: 30px 0 20px;">
         <div class="section-title" style="padding-left:0; padding-top:0;">🤝 旅費結算中心 (自動計算)</div>
         <div class="card" style="margin-bottom: 24px; border: 1.5px solid var(--accent); box-shadow: 0 8px 24px rgba(180,132,108,0.15); background: linear-gradient(180deg, #FFFFFF 0%, #FFFDFB 100%);">
           <div class="card-body">
-            <div v-if="settlementTransactions.length === 0" style="text-align:center; color:var(--text-muted); font-weight:800; font-size:14px; padding: 10px 0;">
-              🎉 目前帳目皆已結清，無人欠款！
-            </div>
+            <div v-if="settlementTransactions.length === 0" style="text-align:center; color:var(--text-muted); font-weight:800; font-size:14px; padding: 10px 0;">🎉 目前帳目皆已結清，無人欠款！</div>
             <div v-else>
               <div style="font-size: 12px; color: var(--text-muted); font-weight: 800; margin-bottom: 12px; text-align: center;">照著下方指示轉帳，一秒結清所有公費！</div>
               <div v-for="(txn, i) in settlementTransactions" :key="'txn'+i" style="display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px dashed var(--border);">
-                <div style="font-size:16px; font-weight:900; color:var(--text);">
-                  <span style="color:var(--red);">{{ txn.from }}</span>
-                  <span style="margin:0 8px; color:var(--text-muted); font-size: 14px;">👉 給</span>
-                  <span style="color:var(--green);">{{ txn.to }}</span>
-                </div>
-                <div style="text-align:right;">
-                  <div style="font-size:18px; font-weight:900; font-family:'Nunito', sans-serif; color:var(--accent);">
-                    NT$ {{ txn.amount.toLocaleString() }}
-                  </div>
-                  <div style="font-size:12px; color:var(--text-muted); font-weight:800; margin-top:2px;" v-if="txn.localCode && txn.localCode !== 'TWD'">
-                    ≈ {{ txn.localCode }} {{ txn.localAmount.toLocaleString() }}
-                  </div>
-                </div>
+                <div style="font-size:16px; font-weight:900; color:var(--text);"><span style="color:var(--red);">{{ txn.from }}</span><span style="margin:0 8px; color:var(--text-muted); font-size: 14px;">👉 給</span><span style="color:var(--green);">{{ txn.to }}</span></div>
+                <div style="text-align:right;"><div style="font-size:18px; font-weight:900; font-family:'Nunito', sans-serif; color:var(--accent);">NT$ {{ txn.amount.toLocaleString() }}</div><div style="font-size:12px; color:var(--text-muted); font-weight:800; margin-top:2px;" v-if="txn.localCode && txn.localCode !== 'TWD'">≈ {{ txn.localCode }} {{ txn.localAmount.toLocaleString() }}</div></div>
               </div>
             </div>
           </div>
         </div>
-
       </div>
     </div>
 
     <div v-show="activeTab === 'journal'" class="tab-content">
       <div class="section-title">📖 旅行回憶日誌</div>
       <div v-if="!currentTrip.journal || currentTrip.journal.length === 0" style="text-align:center; padding:30px; color:var(--text-muted); font-weight:800; font-size:14px; border:2px dashed var(--border); border-radius:var(--r-xl); margin: 0 20px 16px;">
-        <div style="font-size:40px; margin-bottom:12px;">📷</div>
-        寫下第一篇回憶吧 ✨
+        <div style="font-size:40px; margin-bottom:12px;">📷</div>寫下第一篇回憶吧 ✨
       </div>
       <div class="card" v-for="(j, i) in currentTrip.journal" :key="i">
         <div class="card-body">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding-bottom:12px; border-bottom:1px dashed var(--border);">
-            <span class="tag tag-blue" style="font-size:12px; padding:6px 12px;">👤 {{ j.author }}</span>
-            <span style="font-size: 13px; font-weight: 900; color: var(--text-muted);">📅 {{ j.date }}</span>
-          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding-bottom:12px; border-bottom:1px dashed var(--border);"><span class="tag tag-blue" style="font-size:12px; padding:6px 12px;">👤 {{ j.author }}</span><span style="font-size: 13px; font-weight: 900; color: var(--text-muted);">📅 {{ j.date }}</span></div>
           <img v-if="j.img" :src="j.img" style="width: 100%; max-height: 280px; object-fit: cover; border-radius: var(--r-md); margin-bottom: 16px; border: 1px solid var(--border);" loading="lazy">
           <div style="font-size: 15px; font-weight: 700; line-height: 1.8; white-space: pre-wrap; color: var(--text);">{{ j.text }}</div>
           <button class="btn-edit-card" @click="currentTrip.journal.splice(i,1)">🗑️ 刪除這篇日誌</button>
@@ -589,23 +539,12 @@ body {
     </div>
 
     <nav class="nav-bar">
-      <button class="nav-item" :class="{active: activeTab==='itinerary'}" @click="activeTab='itinerary'">
-        <span class="nav-icon">📅</span><span class="nav-label">行程</span>
-      </button>
-      <button class="nav-item" :class="{active: activeTab==='info'}" @click="activeTab='info'">
-        <span class="nav-icon">✈️</span><span class="nav-label">預訂</span>
-      </button>
-      <button class="nav-item" :class="{active: activeTab==='lists'}" @click="activeTab='lists'">
-        <span class="nav-icon">🛍️</span><span class="nav-label">清單</span>
-      </button>
-      <button class="nav-item" :class="{active: activeTab==='split'}" @click="activeTab='split'">
-        <span class="nav-icon">💸</span><span class="nav-label">記帳</span>
-      </button>
-      <button class="nav-item" :class="{active: activeTab==='journal'}" @click="activeTab='journal'">
-        <span class="nav-icon">📖</span><span class="nav-label">日誌</span>
-      </button>
+      <button class="nav-item" :class="{active: activeTab==='itinerary'}" @click="activeTab='itinerary'"><span class="nav-icon">📅</span><span class="nav-label">行程</span></button>
+      <button class="nav-item" :class="{active: activeTab==='info'}" @click="activeTab='info'"><span class="nav-icon">✈️</span><span class="nav-label">預訂</span></button>
+      <button class="nav-item" :class="{active: activeTab==='lists'}" @click="activeTab='lists'"><span class="nav-icon">🛍️</span><span class="nav-label">清單</span></button>
+      <button class="nav-item" :class="{active: activeTab==='split'}" @click="activeTab='split'"><span class="nav-icon">💸</span><span class="nav-label">記帳</span></button>
+      <button class="nav-item" :class="{active: activeTab==='journal'}" @click="activeTab='journal'"><span class="nav-icon">📖</span><span class="nav-label">日誌</span></button>
     </nav>
-
   </div>
 
   <div class="modal-overlay" v-if="showTripModal" @click.self="showTripModal=false">
@@ -622,7 +561,6 @@ body {
             <button class="btn btn-sm" style="background:var(--surface); border:1.5px solid var(--border); white-space:nowrap; padding:10px 16px; font-size:14px; border-radius: 12px; color: var(--text);" @click.prevent="applyPreset('HK')">🇭🇰 香港</button>
             <button class="btn btn-sm" style="background:var(--surface); border:1.5px solid var(--border); white-space:nowrap; padding:10px 16px; font-size:14px; border-radius: 12px; color: var(--text);" @click.prevent="applyPreset('US')">🇺🇸 美國</button>
           </div>
-          <div style="font-size:12px; color:var(--text-muted); margin-top:4px; font-weight:800;">找不到國家？請直接在下方手動輸入國旗與幣別即可！</div>
         </div>
         <hr style="border:none; border-top:1px dashed var(--border); margin: 8px 0;">
         <div class="grid-2">
@@ -638,10 +576,7 @@ body {
           <div class="input-wrap"><label class="input-label">當地幣別 (可自訂)</label><input type="text" class="input-field" v-model="newTripForm.currencyCode" placeholder="例：VND"></div>
           <div class="input-wrap"><label class="input-label">對台幣匯率</label><input type="number" class="input-field" v-model="newTripForm.currencyRate" placeholder="例：0.0013"></div>
         </div>
-        <div class="input-wrap">
-          <label class="input-label">👥 同行夥伴 (任何人皆可自由新增)</label>
-          <input type="text" class="input-field" v-model="newTripForm.collaboratorsStr" placeholder="例：小明, 媽媽 (用逗號分隔)">
-        </div>
+        <div class="input-wrap"><label class="input-label">👥 同行夥伴 (任何人皆可自由新增)</label><input type="text" class="input-field" v-model="newTripForm.collaboratorsStr" placeholder="例：小明, 媽媽 (用逗號分隔)"></div>
         <div>
           <label class="input-label" style="margin-bottom:8px; display:block;">🖼️ 封面圖片 (選填)</label>
           <div style="position:relative; margin-bottom:12px;" v-if="newTripForm.coverImg"><img :src="newTripForm.coverImg" style="width:100%; height:120px; object-fit:cover; border-radius:12px; border:1px solid var(--border); box-shadow:var(--shadow);"><button class="btn btn-sm btn-danger" style="position:absolute; top:8px; right:8px;" @click="newTripForm.coverImg=''">✕</button></div>
@@ -660,22 +595,18 @@ body {
       <div class="modal-handle"></div>
       <div class="modal-title-styled">✏️ 編輯單日行程</div>
       <div style="display:flex;flex-direction:column;gap:14px;">
-        <div class="grid-2">
-          <div class="input-wrap"><label class="input-label">時間</label><input type="time" class="input-field" v-model="schedForm.time"></div>
-          <div class="input-wrap">
-            <label class="input-label">類別</label>
-            <select class="input-field" v-model="schedForm.category">
-              <option value="spot">📸 景點</option><option value="food">🍽️ 美食</option><option value="shop">🛍️ 購物</option><option value="transit">🚆 交通</option>
-            </select>
-          </div>
+        <div style="display: flex; gap: 10px;">
+          <div class="input-wrap" style="flex: 1;"><label class="input-label">時間</label><input type="time" class="input-field" v-model="schedForm.time"></div>
+          <div class="input-wrap" style="flex: 1;"><label class="input-label">類別</label><select class="input-field" v-model="schedForm.category"><option value="spot">📸 景點</option><option value="food">🍽️ 美食</option><option value="shop">🛍️ 購物</option><option value="transit">🚆 交通</option></select></div>
         </div>
         <div class="input-wrap"><label class="input-label">地點名稱 (將用於精準導航)</label><input type="text" class="input-field" v-model="schedForm.place"></div>
+        <div class="input-wrap"><label class="input-label">🕒 營業時間</label><input type="text" class="input-field" v-model="schedForm.hours" placeholder="例：10:00 - 22:00 (選填)"></div>
         <div class="grid-2">
           <div class="input-wrap"><label class="input-label">花費/門票</label><input type="text" class="input-field" v-model="schedForm.cost"></div>
           <div class="input-wrap"><label class="input-label">預約/訂位</label><input type="text" class="input-field" v-model="schedForm.reservation"></div>
         </div>
         <div class="input-wrap"><label class="input-label">連結(票券/官網)</label><input type="url" class="input-field" v-model="schedForm.link"></div>
-        <div class="input-wrap"><label class="input-label">備註</label><textarea class="input-field" v-model="schedForm.note" rows="2"></textarea></div>
+        <div class="input-wrap"><label class="input-label">備註 (支援換行)</label><textarea class="input-field" v-model="schedForm.note" rows="3"></textarea></div>
         <div style="display:flex; gap:12px; margin-top:8px;">
           <button class="btn btn-primary" style="flex:2;" @click="saveSchedule">💾 儲存</button>
           <button class="btn btn-danger" style="flex:1;" v-if="editingSchedule!==null" @click="deleteSchedule">🗑️ 刪除</button>
@@ -690,47 +621,25 @@ body {
       <div class="modal-title-styled">✏️ 編輯{{ editTitle }}</div>
       <div v-if="showEditModal==='flight'">
         <div v-for="(f, i) in infoForm.flights" :key="i" style="background:white;padding:16px;border-radius:var(--r-lg);border:1px solid var(--border);margin-bottom:16px;">
-          <div class="grid-2" style="margin-bottom:12px;">
-            <div class="input-wrap"><label class="input-label">搭乘者</label><input type="text" class="input-field" v-model="f.passenger"></div>
-            <div class="input-wrap"><label class="input-label">去/回</label><select class="input-field" v-model="f.type"><option value="去程">🛫 去程</option><option value="回程">🛬 回程</option><option value="轉機">🔄 轉機</option></select></div>
-          </div>
-          <div class="grid-2" style="margin-bottom:12px;">
-            <div class="input-wrap"><label class="input-label">航空 (例: 星宇航空)</label><input type="text" class="input-field" v-model="f.airline"></div>
-            <div class="input-wrap"><label class="input-label">航班號 (例: JX 796)</label><input type="text" class="input-field" v-model="f.flightNum"></div>
-          </div>
+          <div class="grid-2" style="margin-bottom:12px;"><div class="input-wrap"><label class="input-label">搭乘者</label><input type="text" class="input-field" v-model="f.passenger"></div><div class="input-wrap"><label class="input-label">去/回</label><select class="input-field" v-model="f.type"><option value="去程">🛫 去程</option><option value="回程">🛬 回程</option><option value="轉機">🔄 轉機</option></select></div></div>
+          <div class="grid-2" style="margin-bottom:12px;"><div class="input-wrap"><label class="input-label">航空 (例: 星宇航空)</label><input type="text" class="input-field" v-model="f.airline"></div><div class="input-wrap"><label class="input-label">航班號 (例: JX 796)</label><input type="text" class="input-field" v-model="f.flightNum"></div></div>
           <div style="background:#FDFBF7;padding:16px;border-radius:12px; border:1px dashed var(--border); margin-bottom:12px;">
             <div class="input-wrap" style="margin-bottom:12px;"><label class="input-label">飛行日期</label><input type="date" class="input-field" v-model="f.flightDate"></div>
-            <div class="grid-2" style="margin-bottom:12px;">
-              <div><label class="input-label">起飛 代碼</label><input type="text" class="input-field" v-model="f.originCode" placeholder="TPE" style="margin-bottom:6px;"><input type="text" class="input-field" v-model="f.originCity" placeholder="台北" style="margin-bottom:6px;"><input type="time" class="input-field" v-model="f.depTime"></div>
-              <div><label class="input-label">抵達 代碼</label><input type="text" class="input-field" v-model="f.destCode" placeholder="BKK" style="margin-bottom:6px;"><input type="text" class="input-field" v-model="f.destCity" placeholder="曼谷" style="margin-bottom:6px;"><input type="time" class="input-field" v-model="f.arrTime"></div>
-            </div>
+            <div class="grid-2" style="margin-bottom:12px;"><div><label class="input-label">起飛 代碼</label><input type="text" class="input-field" v-model="f.originCode" placeholder="TPE" style="margin-bottom:6px;"><input type="text" class="input-field" v-model="f.originCity" placeholder="台北" style="margin-bottom:6px;"><input type="time" class="input-field" v-model="f.depTime"></div><div><label class="input-label">抵達 代碼</label><input type="text" class="input-field" v-model="f.destCode" placeholder="BKK" style="margin-bottom:6px;"><input type="text" class="input-field" v-model="f.destCity" placeholder="曼谷" style="margin-bottom:6px;"><input type="time" class="input-field" v-model="f.arrTime"></div></div>
             <div class="input-wrap"><label class="input-label">飛行時長 (例: 03h00m)</label><input type="text" class="input-field" v-model="f.duration"></div>
           </div>
-          <div class="grid-2" style="margin-bottom:16px;">
-            <div class="input-wrap"><label class="input-label">行李 (例: 23kg)</label><input type="text" class="input-field" v-model="f.baggage"></div>
-            <div class="input-wrap"><label class="input-label">機型座位 (例: A321)</label><input type="text" class="input-field" v-model="f.seats"></div>
-          </div>
+          <div class="grid-2" style="margin-bottom:16px;"><div class="input-wrap"><label class="input-label">行李 (例: 23kg)</label><input type="text" class="input-field" v-model="f.baggage"></div><div class="input-wrap"><label class="input-label">機型座位 (例: A321)</label><input type="text" class="input-field" v-model="f.seats"></div></div>
           <button class="btn-edit-card" style="color:var(--red);" @click="infoForm.flights.splice(i,1)">🗑️ 刪除航班</button>
         </div>
         <button class="btn btn-ghost" style="margin-bottom:14px;" @click="infoForm.flights.push({type:'去程'})">➕ 新增航班</button>
       </div>
       <div v-if="showEditModal==='hotel'">
         <div v-for="(h, i) in infoForm.hotels" :key="i" style="background:white;padding:16px;border-radius:var(--r-lg);border:1px solid var(--border);margin-bottom:16px;">
-          <div class="grid-2" style="margin-bottom:12px;">
-            <div class="input-wrap"><label class="input-label">類型</label><select class="input-field" v-model="h.type"><option value="飯店">飯店</option><option value="民宿">民宿</option><option value="Airbnb">Airbnb</option></select></div>
-            <div class="input-wrap" style="justify-content:center;"><label style="font-size:14px; font-weight:800; color:var(--accent); display:flex; align-items:center; gap:8px;"><input type="checkbox" v-model="h.hasBreakfast" style="width:18px;height:18px;"> 🍳 含早餐</label></div>
-          </div>
+          <div class="grid-2" style="margin-bottom:12px;"><div class="input-wrap"><label class="input-label">類型</label><select class="input-field" v-model="h.type"><option value="飯店">飯店</option><option value="民宿">民宿</option><option value="Airbnb">Airbnb</option></select></div><div class="input-wrap" style="justify-content:center;"><label style="font-size:14px; font-weight:800; color:var(--accent); display:flex; align-items:center; gap:8px;"><input type="checkbox" v-model="h.hasBreakfast" style="width:18px;height:18px;"> 🍳 含早餐</label></div></div>
           <div class="input-wrap"><label class="input-label">住宿名稱</label><input type="text" class="input-field" v-model="h.name"></div>
           <div class="input-wrap"><label class="input-label">入住區間</label><input type="text" class="input-field" v-model="h.dateRange" placeholder="05/15-05/19"></div>
-          <div class="grid-2">
-            <div class="input-wrap"><label class="input-label">IN</label><input type="time" class="input-field" v-model="h.checkIn"></div>
-            <div class="input-wrap"><label class="input-label">OUT</label><input type="time" class="input-field" v-model="h.checkOut"></div>
-          </div>
-          <div style="background:#FDFBF7; padding:14px; border-radius:12px; border:1px dashed var(--border); margin:14px 0; display:flex; flex-direction:column; gap:10px;">
-            <div class="input-wrap"><label class="input-label">🛏️ 分房安排</label><textarea class="input-field" v-model="h.roomArrangement" rows="2"></textarea></div>
-            <div class="input-wrap"><label class="input-label">🏊 設施</label><input type="text" class="input-field" v-model="h.facilities"></div>
-            <div class="input-wrap"><label class="input-label">🏪 機能</label><input type="text" class="input-field" v-model="h.nearby"></div>
-          </div>
+          <div class="grid-2"><div class="input-wrap"><label class="input-label">IN</label><input type="time" class="input-field" v-model="h.checkIn"></div><div class="input-wrap"><label class="input-label">OUT</label><input type="time" class="input-field" v-model="h.checkOut"></div></div>
+          <div style="background:#FDFBF7; padding:14px; border-radius:12px; border:1px dashed var(--border); margin:14px 0; display:flex; flex-direction:column; gap:10px;"><div class="input-wrap"><label class="input-label">🛏️ 分房安排</label><textarea class="input-field" v-model="h.roomArrangement" rows="2"></textarea></div><div class="input-wrap"><label class="input-label">🏊 設施</label><input type="text" class="input-field" v-model="h.facilities"></div><div class="input-wrap"><label class="input-label">🏪 機能</label><input type="text" class="input-field" v-model="h.nearby"></div></div>
           <button class="btn-edit-card" style="color:var(--red);" @click="infoForm.hotels.splice(i,1)">🗑️ 刪除住宿</button>
         </div>
         <button class="btn btn-ghost" style="margin-bottom:14px;" @click="infoForm.hotels.push({type:'飯店', hasBreakfast: false})">➕ 新增住宿</button>
@@ -738,10 +647,7 @@ body {
       <div v-if="showEditModal==='rental'">
         <div v-for="(r, i) in infoForm.rentals" :key="i" style="background:white;padding:16px;border-radius:var(--r-lg);border:1px solid var(--border);margin-bottom:16px;display:flex;flex-direction:column;gap:12px;">
           <div class="input-wrap"><label class="input-label">公司與車型</label><input type="text" class="input-field" v-model="r.company" placeholder="例: Toyota Sienta"></div>
-          <div class="grid-2">
-            <div class="input-wrap"><label class="input-label">取車日期</label><input type="date" class="input-field" v-model="r.pickupDate"></div>
-            <div class="input-wrap"><label class="input-label">時間</label><input type="time" class="input-field" v-model="r.pickupTime"></div>
-          </div>
+          <div class="grid-2"><div class="input-wrap"><label class="input-label">取車日期</label><input type="date" class="input-field" v-model="r.pickupDate"></div><div class="input-wrap"><label class="input-label">時間</label><input type="time" class="input-field" v-model="r.pickupTime"></div></div>
           <div class="input-wrap"><label class="input-label">備註/配備</label><input type="text" class="input-field" v-model="r.equip" placeholder="例: 兒童安全座椅"></div>
           <button class="btn-edit-card" style="color:var(--red);" @click="infoForm.rentals.splice(i,1)">🗑️ 刪除租車</button>
         </div>
@@ -760,22 +666,16 @@ body {
       <div class="modal-handle"></div>
       <div class="modal-title-styled">🛒 {{ editingChecklist!==null ? '編輯' : '新增' }}必吃必買</div>
       <div style="display:flex;flex-direction:column;gap:14px;">
-        <div style="display:flex;gap:10px;">
-          <span class="tag" :class="checkForm.type==='eat'?'tag-red':'tag-blue'" style="font-size:14px; cursor:pointer; padding:8px 16px; border:1px solid var(--border);" @click="checkForm.type='eat'">🍽️ 必吃</span>
-          <span class="tag" :class="checkForm.type==='buy'?'tag-red':'tag-blue'" style="font-size:14px; cursor:pointer; padding:8px 16px; border:1px solid var(--border);" @click="checkForm.type='buy'">🛒 必買</span>
-        </div>
+        <div style="display:flex;gap:10px;"><span class="tag" :class="checkForm.type==='eat'?'tag-red':'tag-blue'" style="font-size:14px; cursor:pointer; padding:8px 16px; border:1px solid var(--border);" @click="checkForm.type='eat'">🍽️ 必吃</span><span class="tag" :class="checkForm.type==='buy'?'tag-red':'tag-blue'" style="font-size:14px; cursor:pointer; padding:8px 16px; border:1px solid var(--border);" @click="checkForm.type='buy'">🛒 必買</span></div>
         <div>
-          <label class="input-label" style="margin-bottom:8px; display:block;">📸 參考圖片 (自動轉 WebP 極速壓縮)</label>
+          <label class="input-label" style="margin-bottom:8px; display:block;">📸 參考圖片</label>
           <div style="position:relative; margin-bottom:12px;" v-if="checkForm.img"><img :src="checkForm.img" style="width:100%; border-radius:12px; border:1px solid var(--border); box-shadow:var(--shadow);"><button class="btn btn-sm btn-danger" style="position:absolute; top:12px; right:12px;" @click="checkForm.img=null">✕</button></div>
           <label class="upload-area" style="font-size:13px; border-radius: 12px; padding: 10px;">📁 從手機選擇照片<input type="file" accept="image/*" @change="onChecklistImg" style="display:none;"></label>
         </div>
         <div class="input-wrap"><label class="input-label">名稱</label><input type="text" class="input-field" v-model="checkForm.item"></div>
         <div class="input-wrap"><label class="input-label">地點</label><input type="text" class="input-field" v-model="checkForm.place"></div>
         <div class="input-wrap"><label class="input-label">🕒 營業時間</label><input type="text" class="input-field" v-model="checkForm.hours" placeholder="例：10:00 - 22:00"></div>
-        <div class="grid-2">
-          <div class="input-wrap"><label class="input-label">幣別</label><input type="text" class="input-field" v-model="checkForm.currency" disabled></div>
-          <div class="input-wrap"><label class="input-label">金額</label><input type="number" class="input-field" v-model="checkForm.amount"></div>
-        </div>
+        <div class="grid-2"><div class="input-wrap"><label class="input-label">幣別</label><input type="text" class="input-field" v-model="checkForm.currency" disabled></div><div class="input-wrap"><label class="input-label">金額</label><input type="number" class="input-field" v-model="checkForm.amount"></div></div>
         <div style="display:flex; gap:12px; margin-top:8px;">
           <button class="btn btn-primary" style="flex:2; border-radius: 16px;" @click="saveChecklist">💾 儲存</button>
           <button class="btn btn-danger" style="flex:1; border-radius: 16px;" v-if="editingChecklist!==null" @click="deleteChecklist(myChecklist[editingChecklist].id); showAddChecklist=false;">🗑️ 刪除</button>
@@ -801,7 +701,7 @@ body {
       <div class="modal-handle"></div>
       <div class="modal-title-styled">✍️ 寫日記</div>
       <div style="display:flex;flex-direction:column;gap:14px;">
-        <div class="input-wrap"><label class="input-label">📅 日期</label><input type="date" class="input-field" v-model="journalForm.date"></div>
+        <div class="input-wrap" style="align-items: flex-start;"><label class="input-label">📅 日期</label><input type="date" class="input-field" v-model="journalForm.date" style="max-width: 180px;"></div>
         <div>
           <label class="input-label" style="margin-bottom:8px; display:block;">📸 照片 (自動轉 WebP 極速壓縮)</label>
           <div style="position:relative; margin-bottom:16px;" v-if="journalForm.img"><img :src="journalForm.img" style="width:100%; border-radius:16px; border:1px solid var(--border); box-shadow:var(--shadow);"><button class="btn btn-sm btn-danger" style="position:absolute; top:12px; right:12px; box-shadow:0 2px 8px rgba(0,0,0,0.2);" @click="journalForm.img=null">✕</button></div>
@@ -835,8 +735,29 @@ let docRef = null;
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 db = firebase.firestore();
 
-// 🔥 DB 升級至 v18 (終極結算版)
 docRef = db.collection('shared_trips').doc('roamly_pro_v18_final');
+
+// 🚑 曼谷團急救包資料
+const defaultTripsData = [{
+  id: 't_bangkok_rescue_2026', owner: 'Ariel', collaborators: ['先生', '小明'],
+  city: '曼谷', flag: '🇹🇭', startDate: '2026-05-15', endDate: '2026-05-19', customName: '曼谷醫美SPA旅行',
+  coverImg: 'https://images.unsplash.com/photo-1558981420-87aa9dad1c89?q=80&w=800&auto=format&fit=crop',
+  currencies: [{ code: 'THB', rate: 0.9 }, { code: 'TWD', rate: 1 }],
+  info: {
+    flights: [{ type: '去程', passenger: 'Ariel', airline: '星宇航空', flightNum: 'JX 741', originCode: 'TPE', originCity: '台北', depTime: '10:30', destCode: 'BKK', destCity: '曼谷', arrTime: '13:30', flightDate: '2026-05-15', duration: '03h00m', baggage: '23kg', seats: '未劃位' }],
+    hotels: [{ type: '飯店', name: '曼谷金普頓瑪萊酒店', dateRange: '05/15-05/19', checkIn: '15:00', checkOut: '12:00', hasBreakfast: true, facilities: '無邊際泳池、SPA', nearby: '捷運站旁', roomArrangement: 'Ariel住雙人房，小明單人房', img: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=400&auto=format&fit=crop' }],
+    rentals: [], arrivalCard: '泰國免簽', insurance: '富邦產險 旅平險'
+  },
+  days: [
+    { dateStr: '05/15', fullDate: '2026-05-15', schedule: [{ id: 1, time: '13:30', place: '蘇凡納布機場', category: 'transit', hours: '', cost: '800 THB', reservation: '', link: '', note: '包車進市區' }], weather: {} },
+    { dateStr: '05/16', fullDate: '2026-05-16', schedule: [{ id: 2, time: '14:00', place: 'Let\'s Relax Spa', category: 'spot', hours: '', cost: '2500 THB', reservation: '預約', link: '', note: '按摩放鬆' }], weather: {} },
+    { dateStr: '05/17', fullDate: '2026-05-17', schedule: [], weather: {} },
+    { dateStr: '05/18', fullDate: '2026-05-18', schedule: [], weather: {} },
+    { dateStr: '05/19', fullDate: '2026-05-19', schedule: [], weather: {} }
+  ],
+  packingList: [], checklist: [], wishlist: [], journal: [], 
+  expenses: [{ id: 1, date: '2026-05-15', desc: '包車費用', amount: '800', currency: 'THB', payer: 'Ariel', isPersonal: false, splits: ['Ariel', '先生', '小明'] }]
+}];
 
 const { createApp, ref, computed, reactive, watch, onMounted } = Vue;
 
@@ -959,31 +880,33 @@ createApp({
     const handleLogout = () => { localStorage.clear(); location.reload(); };
 
     const defaultTripTemplate = { info: { flights: [], hotels: [], rentals: [], arrivalCard: '', insurance: '' }, days: [{ dateStr: '', fullDate:'', schedule: [], weather: {} }], packingList: [], checklist: [], wishlist: [], journal: [], expenses: [], currencies: [] };
-    const defaultTripsData = [{
-      id: 'trip_bkk_v18', owner: 'Ariel', collaborators: ['先生', '小明'],
-      city: '曼谷', flag: '🇹🇭', startDate: '2026-05-15', endDate: '2026-05-19', customName: '曼谷醫美SPA旅行',
-      coverImg: 'https://images.unsplash.com/photo-1558981420-87aa9dad1c89?q=80&w=800&auto=format&fit=crop',
-      currencies: [{ code: 'THB', rate: 0.9 }, { code: 'TWD', rate: 1 }],
-      info: {
-        flights: [{ type: '去程', passenger: 'Ariel', airline: '星宇航空', flightNum: 'JX 741', originCode: 'TPE', originCity: '台北', depTime: '10:30', destCode: 'BKK', destCity: '曼谷', arrTime: '13:30', flightDate: '2026-05-15', duration: '03h00m', baggage: '23kg', seats: '未劃位' }],
-        hotels: [{ type: '飯店', name: '曼谷金普頓瑪萊酒店', dateRange: '05/15-05/19', checkIn: '15:00', checkOut: '12:00', hasBreakfast: true, facilities: '無邊際泳池、SPA', nearby: '捷運站旁', roomArrangement: 'Ariel住雙人房，小明單人房', img: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=400&auto=format&fit=crop' }],
-        rentals: [], arrivalCard: '泰國免簽', insurance: '富邦產險 旅平險'
-      },
-      days: [
-        { dateStr: '05/15', fullDate: '2026-05-15', schedule: [{ id: 1, time: '13:30', place: '蘇凡納布機場', category: 'transit', cost: '800 THB', reservation: '', note: '包車進市區' }], weather: {} },
-        { dateStr: '05/16', fullDate: '2026-05-16', schedule: [{ id: 2, time: '14:00', place: 'Let\'s Relax Spa', category: 'spot', cost: '2500 THB', reservation: '預約', note: '按摩放鬆' }], weather: {} }
-      ],
-      packingList: [], checklist: [], wishlist: [], journal: [], 
-      expenses: [{ id: 1, date: '2026-05-15', desc: '包車費用', amount: '800', currency: 'THB', payer: 'Ariel', isPersonal: false, splits: ['Ariel', '先生', '小明'] }]
-    }];
-
-    const trips = ref(defaultTripsData);
+    
+    const trips = ref([]);
 
     onMounted(() => {
       docRef.onSnapshot(doc => {
         isConnected.value = true;
-        if (doc.exists) { trips.value = doc.data().trips; }
-        else { docRef.set({ trips: JSON.parse(JSON.stringify(trips.value)) }).catch(e => { isConnected.value = false; }); }
+        // 🚑 檢查資料庫是否為空，如果是空的，啟動救援機制直接塞入曼谷行程！
+        if (doc.exists && doc.data().trips && doc.data().trips.length > 0) { 
+          let loadedTrips = doc.data().trips;
+          let needFix = false;
+          loadedTrips.forEach(t => {
+            if (!t.id) {
+              t.id = 't_' + Date.now() + Math.floor(Math.random() * 1000);
+              needFix = true;
+            }
+          });
+          trips.value = loadedTrips;
+          if (needFix) {
+             docRef.set({ trips: JSON.parse(JSON.stringify(loadedTrips)) }, { merge: true });
+          }
+        }
+        else { 
+          // 🚨 資料庫是空的！啟動自動還原模式
+          console.log('啟動曼谷團急救還原...');
+          trips.value = JSON.parse(JSON.stringify(defaultTripsData));
+          docRef.set({ trips: JSON.parse(JSON.stringify(trips.value)) }).catch(e => { isConnected.value = false; }); 
+        }
       }, (err) => { isConnected.value = false; });
     });
 
@@ -1035,14 +958,12 @@ createApp({
     const myChecklist = computed(() => { if (userRole.value === 'admin') return currentTrip.value.checklist || []; return (currentTrip.value.checklist || []).filter(x => !x.owner || x.owner === currentUserName.value); });
     const myWishlist = computed(() => { if (userRole.value === 'admin') return currentTrip.value.wishlist || []; return (currentTrip.value.wishlist || []).filter(x => !x.owner || x.owner === currentUserName.value); });
     
-    // V18: 可見明細
     const visibleExpenses = computed(() => { 
       if (!currentTrip.value.expenses) return []; 
       if (userRole.value === 'admin') return currentTrip.value.expenses; 
       return currentTrip.value.expenses.filter(e => e.payer === currentUserName.value || (e.splits && e.splits.includes(currentUserName.value))); 
     });
 
-    // 🌟 V18: 嚴格精確的個人總花費計算 (自己獨享 + 大家一起平攤後算我的份)
     const myTotalExpense = computed(() => {
       if (!currentTrip.value.expenses?.length) return 0;
       let totalTwd = 0;
@@ -1072,7 +993,6 @@ createApp({
 
     const tripMembers = computed(() => { const set = new Set([currentTrip.value.owner]); if (currentTrip.value.collaborators) currentTrip.value.collaborators.forEach(c => set.add(c)); return Array.from(set).filter(Boolean); });
 
-    // 🌟 結算中心演算法 (加入當地貨幣換算)
     const settlementTransactions = computed(() => {
       const balances = {};
       tripMembers.value.forEach(m => balances[m] = 0);
@@ -1101,7 +1021,6 @@ createApp({
       debtors.sort((a, b) => b.amount - a.amount);
       creditors.sort((a, b) => b.amount - a.amount);
 
-      // 抓取主要當地幣別 (排除 TWD)
       const primaryCurr = currentTrip.value.currencies?.find(c => c.code !== 'TWD') || {code: 'TWD', rate: 1};
       const primaryRate = parseFloat(primaryCurr.rate) || 1;
 
@@ -1150,9 +1069,31 @@ createApp({
 
       if (newTripForm.id) { 
         const t = trips.value.find(x => x.id === newTripForm.id); 
-        if (t) { Object.assign(t, { ...newTripForm, collaborators: collabArray, currencies: finalCurrencies }); t.days = generateDays(t.startDate, t.endDate); } 
+        if (t) { 
+          Object.assign(t, { ...newTripForm, collaborators: collabArray, currencies: finalCurrencies }); 
+          const oldDays = t.days || [];
+          const newDays = generateDays(t.startDate, t.endDate);
+          newDays.forEach(nd => {
+            const existing = oldDays.find(od => od.fullDate === nd.fullDate);
+            if (existing) {
+              nd.schedule = existing.schedule || [];
+              nd.weather = existing.weather || {};
+            }
+          });
+          t.days = newDays;
+        } 
       } else { 
-        trips.value.push({ id: 't_' + Date.now(), owner: currentUserName.value, collaborators: collabArray, ...newTripForm, coverImg: newTripForm.coverImg || 'https://images.unsplash.com/photo-1558981420-87aa9dad1c89?q=80&w=800&auto=format&fit=crop', currencies: finalCurrencies, info: { flights: [], hotels: [], rentals: [], arrivalCard: '', insurance: '' }, packingList: [], journal: [], checklist: [], wishlist: [], expenses: [], days: generateDays(newTripForm.startDate, newTripForm.endDate) }); 
+        trips.value.push({ 
+          ...newTripForm,
+          id: 't_' + Date.now(),
+          owner: currentUserName.value, 
+          collaborators: collabArray, 
+          coverImg: newTripForm.coverImg || 'https://images.unsplash.com/photo-1558981420-87aa9dad1c89?q=80&w=800&auto=format&fit=crop', 
+          currencies: finalCurrencies, 
+          info: { flights: [], hotels: [], rentals: [], arrivalCard: '', insurance: '' }, 
+          packingList: [], journal: [], checklist: [], wishlist: [], expenses: [], 
+          days: generateDays(newTripForm.startDate, newTripForm.endDate) 
+        }); 
       } 
       showTripModal.value = false; 
     };
@@ -1161,10 +1102,29 @@ createApp({
     const deleteTripFromHome = (id) => { if (!confirm('⚠️ 確定要刪除這趟旅程嗎？此操作將清除所有紀錄且無法復原！')) return; trips.value = trips.value.filter(t => t.id !== id); };
 
     const showAddSchedule = ref(false); const editingSchedule = ref(null);
-    const schedForm = reactive({ time: '09:00', place: '', category: 'spot', cost: '', reservation: '', link: '', note: '' });
-    const openAddSchedule = () => { editingSchedule.value = null; Object.assign(schedForm, { time: '09:00', place: '', category: 'spot', cost: '', reservation: '', link: '', note: '' }); showAddSchedule.value = true; };
-    const editSchedule = (idx) => { editingSchedule.value = idx; Object.assign(schedForm, currentDayData.value.schedule[idx]); showAddSchedule.value = true; };
-    const saveSchedule = () => { if (!schedForm.place) return; const data = JSON.parse(JSON.stringify(schedForm)); if (editingSchedule.value !== null) { Object.assign(currentDayData.value.schedule[editingSchedule.value], data); } else { currentDayData.value.schedule.push({ id: Date.now(), ...data }); } currentDayData.value.schedule.sort((a, b) => a.time.localeCompare(b.time)); showAddSchedule.value = false; };
+    const schedForm = reactive({ time: '09:00', place: '', category: 'spot', cost: '', reservation: '', link: '', hours: '', note: '' });
+    
+    const openAddSchedule = () => { 
+      editingSchedule.value = null; 
+      Object.assign(schedForm, { time: '09:00', place: '', category: 'spot', cost: '', reservation: '', link: '', hours: '', note: '' }); 
+      showAddSchedule.value = true; 
+    };
+    const editSchedule = (idx) => { 
+      editingSchedule.value = idx; 
+      Object.assign(schedForm, { hours: '', ...currentDayData.value.schedule[idx] }); 
+      showAddSchedule.value = true; 
+    };
+    const saveSchedule = () => { 
+      if (!schedForm.place) return; 
+      const data = JSON.parse(JSON.stringify(schedForm)); 
+      if (editingSchedule.value !== null) { 
+        Object.assign(currentDayData.value.schedule[editingSchedule.value], data); 
+      } else { 
+        currentDayData.value.schedule.push({ id: Date.now(), ...data }); 
+      } 
+      currentDayData.value.schedule.sort((a, b) => a.time.localeCompare(b.time)); 
+      showAddSchedule.value = false; 
+    };
     const deleteSchedule = () => { currentDayData.value.schedule.splice(editingSchedule.value, 1); showAddSchedule.value = false; };
 
     const isFetchingWeather = ref(false);
